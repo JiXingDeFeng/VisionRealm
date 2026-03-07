@@ -1,0 +1,508 @@
+{
+  "multipart": [
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_10",
+          "weight":5
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_11",
+          "weight":6
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_12",
+          "weight":3
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_13",
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_14",
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "north"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_10",
+          "y":90,
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_11",
+          "y":90,
+          "weight":3
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_12",
+          "y":90,
+          "weight":5
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_13",
+          "y":90,
+          "weight":2
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_14",
+          "y":90,
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "east"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_10",
+          "y":180,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_11",
+          "y":180,
+          "weight":5
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_12",
+          "y":180,
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_13",
+          "y":180,
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_14",
+          "y":180,
+          "weight":3
+        }
+      ],
+      "when": {
+        "facing": "south"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_10",
+          "y": 270,
+          "weight":6
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_11",
+          "y": 270,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_12",
+          "y": 270,
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_13",
+          "y": 270,
+          "weight":2
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_14",
+          "y": 270,
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "west"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_20",
+          "weight":5
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_21",
+          "weight":5
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_22",
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_23",
+          "weight":2
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_24",
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "north",
+        "flower_amount": "2|3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_20",
+          "y":90,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_21",
+          "y":90,
+          "weight":6
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_22",
+          "y":90,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_23",
+          "y":90,
+          "weight":2
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_24",
+          "y":90,
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "east",
+        "flower_amount": "2|3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_20",
+          "y":180,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_21",
+          "y":180,
+          "weight":11
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_22",
+          "y":180,
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_23",
+          "y":180,
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_24",
+          "y":180,
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "south",
+        "flower_amount": "2|3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_20",
+          "y": 270,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_21",
+          "y": 270,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_22",
+          "y": 270,
+          "weight":10
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_23",
+          "y": 270,
+          "weight":3
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_24",
+          "y": 270,
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "west",
+        "flower_amount": "2|3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_30",
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_31",
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_32",
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_33",
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_34",
+          "weight":3
+        }
+      ],
+      "when": {
+        "facing": "north",
+        "flower_amount": "3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_30",
+          "y":90,
+          "weight":10
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_31",
+          "y":90,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_32",
+          "y":90,
+          "weight":10
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_33",
+          "y":90,
+          "weight":2
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_34",
+          "y":90,
+          "weight":1
+        }
+      ],
+      "when": {
+        "facing": "east",
+        "flower_amount": "3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_30",
+          "y": 180,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_31",
+          "y": 180,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_32",
+          "y": 180,
+          "weight":7
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_33",
+          "y": 180,
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_34",
+          "y": 180,
+          "weight":2
+        }
+      ],
+      "when": {
+        "facing": "south",
+        "flower_amount": "3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_30",
+          "y": 270,
+          "weight":12
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_31",
+          "y": 270,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_32",
+          "y": 270,
+          "weight":11
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_33",
+          "y": 270,
+          "weight":2
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_34",
+          "y": 270,
+          "weight":2
+        }
+      ],
+      "when": {
+        "facing": "west",
+        "flower_amount": "3|4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_40",
+          "weight":13
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_41",
+          "weight":15
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_42",
+          "weight":18
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_43",
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_44",
+          "weight":2
+        }
+      ],
+      "when": {
+        "facing": "north",
+        "flower_amount": "4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_40",
+          "y":90,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_41",
+          "y":90,
+          "weight":11
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_42",
+          "y":90,
+          "weight":10
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_43",
+          "y":90,
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_44",
+          "y":90,
+          "weight":2
+        }
+      ],
+      "when": {
+        "facing": "east",
+        "flower_amount": "4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_40",
+          "y": 180,
+          "weight":12
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_41",
+          "y": 180,
+          "weight":8
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_42",
+          "y": 180,
+          "weight":9
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_43",
+          "y": 180,
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_44",
+          "y": 180,
+          "weight":3
+        }
+      ],
+      "when": {
+        "facing": "south",
+        "flower_amount": "4"
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_40",
+          "y": 270,
+          "weight":13
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_41",
+          "y": 270,
+          "weight":11
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_42",
+          "y": 270,
+          "weight":12
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_43",
+          "y": 270,
+          "weight":1
+        },
+        {
+          "model": "visionrealm:block/blood_corroded_cherry/cherry_petals/blood_corroded_cherry_petals_44",
+          "y": 270,
+          "weight":3
+        }
+      ],
+      "when": {
+        "facing": "west",
+        "flower_amount": "4"
+      }
+    }
+  ]
+}

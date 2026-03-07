@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_pressure_plate"
+    },
+    "powered=true": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_pressure_plate_down"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_leaves_1"
+  }
+}

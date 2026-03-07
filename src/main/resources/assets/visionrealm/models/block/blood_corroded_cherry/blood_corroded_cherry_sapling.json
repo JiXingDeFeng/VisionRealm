@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "render_type": "cutout",
+  "textures": {
+    "cross": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_sapling"
+  }
+}

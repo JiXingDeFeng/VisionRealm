@@ -1,0 +1,20 @@
+{
+  "the_forgotten_hurt": {
+    "subtitle": "sounds.visionrealm.entity.the_forgotten.hurt",
+    "sounds": [
+      "visionrealm:the_forgotten_hurt"
+    ]
+  },
+  "the_forgotten_death": {
+    "subtitle": "sounds.visionrealm.entity.the_forgotten.death",
+    "sounds": [
+      "visionrealm:the_forgotten_death"
+    ]
+  },
+  "observation_admin_renamed": {
+    "subtitle": "sounds.visionrealm.entity.speech.administrator.observation.renamed",
+    "sounds": [
+      "visionrealm:observation_admin_renamed"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "visionrealm:blood_corroded_cherry_log",
+    "visionrealm:blood_corroded_cherry_wood",
+    "visionrealm:stripped_blood_corroded_cherry_log",
+    "visionrealm:stripped_blood_corroded_cherry_wood",
+    "visionrealm:blood_corroded_cherry_leaves"
+  ]
+}

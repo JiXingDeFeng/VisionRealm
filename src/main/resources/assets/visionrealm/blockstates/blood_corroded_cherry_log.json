@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_log_x"
+    },
+    "axis=y": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_log_y"
+    },
+    "axis=z": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_log_z"
+    }
+  }
+}

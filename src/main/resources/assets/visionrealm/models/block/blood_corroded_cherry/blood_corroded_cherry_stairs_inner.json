@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_planks",
+    "side": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_planks",
+    "top": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_planks"
+  }
+}

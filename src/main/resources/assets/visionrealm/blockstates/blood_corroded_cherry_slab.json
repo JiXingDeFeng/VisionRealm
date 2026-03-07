@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_slab"
+    },
+    "type=double": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_planks"
+    },
+    "type=top": {
+      "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_slab_top"
+    }
+  }
+}

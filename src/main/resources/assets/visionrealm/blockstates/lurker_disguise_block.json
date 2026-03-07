@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "have_entity=false": {
+            "model": "minecraft:block/torch"
+        },
+        "have_entity=true": {
+            "model": "visionrealm:block/lurker_disguise_torch"
+        }
+    }
+}

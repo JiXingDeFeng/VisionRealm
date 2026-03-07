@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/flower_pot_cross",
+  "render_type": "cutout",
+  "textures": {
+    "plant": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_sapling"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_leaves_0",
+        "weight": 3
+      },
+      {
+        "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_leaves_1",
+        "weight": 3
+      },
+      {
+        "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_leaves_2",
+        "weight": 1
+      },
+      {
+        "model": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_leaves_3",
+        "weight": 1
+      }
+    ]
+  }
+}

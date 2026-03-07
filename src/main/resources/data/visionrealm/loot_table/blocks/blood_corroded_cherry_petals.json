@@ -1,0 +1,103 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "functions": [
+        {
+          "add": false,
+          "conditions": [
+            {
+              "block": "visionrealm:blood_corroded_cherry_petals",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "flower_amount": "1"
+              }
+            }
+          ],
+          "count": 1.0,
+          "function": "minecraft:set_count"
+        },
+        {
+          "add": false,
+          "conditions": [
+            {
+              "block": "visionrealm:blood_corroded_cherry_petals",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "flower_amount": "2"
+              }
+            }
+          ],
+          "count": 2.0,
+          "function": "minecraft:set_count"
+        },
+        {
+          "add": false,
+          "conditions": [
+            {
+              "block": "visionrealm:blood_corroded_cherry_petals",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "flower_amount": "3"
+              }
+            }
+          ],
+          "count": 3.0,
+          "function": "minecraft:set_count"
+        },
+        {
+          "add": false,
+          "conditions": [
+            {
+              "block": "visionrealm:blood_corroded_cherry_petals",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "flower_amount": "4"
+              }
+            }
+          ],
+          "count": 4.0,
+          "function": "minecraft:set_count"
+        },
+        {
+          "function": "minecraft:explosion_decay"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:match_tool",
+                  "predicate": {
+                    "predicates": {
+                      "minecraft:enchantments": [
+                        {
+                          "enchantments": "minecraft:silk_touch",
+                          "levels": {
+                            "min": 1
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "name": "visionrealm:blood_corroded_cherry_petals"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:pink_petals"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "minecraft:blocks/pink_petals"
+}

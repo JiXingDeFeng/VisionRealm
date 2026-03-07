@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:block/potted_cactus",
+  "render_type": "cutout"
+}

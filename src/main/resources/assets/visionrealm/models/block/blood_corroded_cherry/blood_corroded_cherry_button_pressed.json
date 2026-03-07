@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/button_pressed",
+  "textures": {
+    "texture": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_planks"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "package": "io.github.fengguoshuzhu.visionrealm.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "data.worldgen.biome.BiomeDataMixin",
+    "world.biome.OverworldBiomeBuilderMixin",
+    "world.block.CactusBlockMixin",
+    "world.block.state.BlockBehaviourMixin",
+    "world.block.state.BlockBehaviourMixin$PropertiesMixin",
+    "world.entity.ai.attribute.player.PlayerAttributeMixin",
+    "world.entity.animal.IronGolemMixin",
+    "world.entity.monster.ZombieMixin",
+    "world.event.entity.EntityErosionControllerMixin",
+    "world.event.entity.player.PlayerSanityControllerMixin",
+    "world.item.NameTagItemMixin",
+    "world.particle.entity.EntityParticleMixin",
+    "world.particle.entity.LivingEntityParticleMixin",
+    "world.server.ServerLevelMixin",
+    "world.sound.entity.LivingEntitySoundMixin"
+  ],
+  "client": [
+    "client.render.entity.LivingEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+	}
+}

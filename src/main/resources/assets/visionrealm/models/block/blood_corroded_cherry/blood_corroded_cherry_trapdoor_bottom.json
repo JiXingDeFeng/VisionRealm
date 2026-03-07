@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_orientable_trapdoor_bottom",
+  "render_type": "cutout",
+  "textures": {
+    "texture": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_trapdoor"
+  }
+}

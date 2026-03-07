@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "visionrealm:item/blood_corroded_cherry/blood_corroded_cherry_hanging_sign"
+  }
+}

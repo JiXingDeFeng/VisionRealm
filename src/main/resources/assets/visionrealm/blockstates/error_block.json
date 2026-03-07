@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "visionrealm:block/error_block"
+    }
+  }
+}

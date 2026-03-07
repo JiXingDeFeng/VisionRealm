@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_log_top",
+    "side": "visionrealm:block/blood_corroded_cherry/blood_corroded_cherry_log"
+  }
+}
