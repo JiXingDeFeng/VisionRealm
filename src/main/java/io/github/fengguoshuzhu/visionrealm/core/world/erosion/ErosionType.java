@@ -1,5 +1,7 @@
 package io.github.fengguoshuzhu.visionrealm.core.world.erosion;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
 import net.minecraft.resources.ResourceLocation;
 
@@ -7,6 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ErosionType {
+    public static final Codec<ErosionType> CODEC = ResourceLocation.CODEC
+            .flatXmap(
+                    resourceLocation -> {
+                        ErosionType type = ErosionType.get(resourceLocation);
+                        return type != null
+                                ? DataResult.success(type)
+                                : DataResult.error(() -> "Unknown erosion type: " + resourceLocation);
+                    },
+                    erosionType -> DataResult.success(erosionType.getName())
+            );
     private static final Map<ResourceLocation, ErosionType> TYPES = new HashMap<>();
     private final ResourceLocation name;
     private final boolean block;
@@ -41,7 +53,7 @@ public class ErosionType {
         return TYPES.get(name);
     }
 
-    public ResourceLocation getName(){
+    public ResourceLocation getName() {
         return this.name;
     }
 

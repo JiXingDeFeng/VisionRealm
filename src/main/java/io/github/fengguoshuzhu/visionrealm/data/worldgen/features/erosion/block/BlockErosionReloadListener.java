@@ -6,6 +6,8 @@ import com.mojang.serialization.JsonOps;
 import io.github.fengguoshuzhu.visionrealm.common.world.erosion.block.BlockErosionKey;
 import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
 import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.block.BlockErosionKeyManager;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -40,7 +42,10 @@ public class BlockErosionReloadListener extends SimplePreparableReloadListener<B
                         BlockErosionKey.TransformIntoBlock blockErosionKey = BlockErosionKey.TransformIntoBlock.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(reader))
                                 .getOrThrow(JsonParseException::new)
                                 .getFirst();
-                        block.put(blockErosionKey.getSource(), blockErosionKey);
+                        Block source = blockErosionKey.getSource();
+                        if (nameQualified(BuiltInRegistries.BLOCK.getKey(source), fileId)) {
+                            block.put(source, blockErosionKey);
+                        }
                     } catch (IOException e) {
                         VisionRealm.LOGGER.error(e.getMessage(), e);
                     }
@@ -56,13 +61,20 @@ public class BlockErosionReloadListener extends SimplePreparableReloadListener<B
                         VisionRealm.LOGGER.error(e.getMessage(), e);
                     }
                 });
-        VisionRealm.LOGGER.info("\n\n方块完成\n");
         return new BlockErosionDataMap(block, entity);
     }
 
     @Override
     protected void apply(@NotNull BlockErosionReloadListener.BlockErosionDataMap map, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
         this.manager.heavyLoad(map.block, map.entity);
+    }
+
+    protected boolean nameQualified(ResourceLocation source, ResourceLocation fileId) {
+        String jsonPath = fileId.getPath();
+        String fileName = jsonPath.substring(jsonPath.lastIndexOf('/') + 1).replace(".json", "");
+        String folderName = jsonPath.substring(0, jsonPath.lastIndexOf('/'));
+        folderName = folderName.substring(folderName.lastIndexOf('/') + 1);
+        return source.getPath().equals(fileName) && source.getNamespace().equals(folderName);
     }
 
     protected record BlockErosionDataMap(Map<Block, BlockErosionKey<Block, BlockState>> block, Map<Block, BlockErosionKey<EntityType<Entity>, Entity>> entity) {

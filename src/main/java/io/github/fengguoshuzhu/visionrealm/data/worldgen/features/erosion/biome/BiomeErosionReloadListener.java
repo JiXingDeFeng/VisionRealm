@@ -1,20 +1,25 @@
 package io.github.fengguoshuzhu.visionrealm.data.worldgen.features.erosion.biome;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
+import io.github.fengguoshuzhu.visionrealm.core.world.erosion.ErosionType;
 import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.biome.BiomeErosionManager;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BiomeErosionReloadListener extends SimplePreparableReloadListener<Map<String, String>> {
-    private static final Gson GSON = new Gson();
+public class BiomeErosionReloadListener extends SimplePreparableReloadListener<Map<ResourceKey<Biome>, ErosionType>> {
     private final BiomeErosionManager manager;
 
     public BiomeErosionReloadListener(BiomeErosionManager manager) {
@@ -23,21 +28,19 @@ public class BiomeErosionReloadListener extends SimplePreparableReloadListener<M
 
     @NotNull
     @Override
-    protected Map<String, String> prepare(@NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
-        Map<String, String> biomeErosionMap = new HashMap<>();
+    protected Map<ResourceKey<Biome>, ErosionType> prepare(@NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
+        Map<ResourceKey<Biome>, ErosionType> biomeErosionMap = new HashMap<>();
         String path = "erosion/biome_erosion_types";
 
         resourceManager.listResources(path, fileName -> fileName.getPath().endsWith(".json"))
                 .forEach((fileId, resource) -> {
                     try (var reader = resource.openAsReader()) {
-                        JsonObject json = GSON.fromJson(reader, JsonObject.class);
-                        JsonObject values = json.getAsJsonObject("values");
-
-                        values.entrySet().forEach(entry -> {
-                            String biomeId = entry.getKey();
-                            String type = entry.getValue().getAsString();
-                            biomeErosionMap.put(biomeId, type);
-                        });
+                        JsonElement element = JsonParser.parseReader(reader);
+                        VisionRealm.LOGGER.info("\n\n{}\n", element);
+                        BiomeErosionConfig config = BiomeErosionConfig.CODEC.decode(JsonOps.INSTANCE, element)
+                                .getOrThrow(JsonParseException::new)
+                                .getFirst();
+                        biomeErosionMap.putAll(config.values());
                     } catch (IOException e) {
                         VisionRealm.LOGGER.error(e.getMessage(), e);
                     }
@@ -47,7 +50,17 @@ public class BiomeErosionReloadListener extends SimplePreparableReloadListener<M
     }
 
     @Override
-    protected void apply(@NotNull Map<String, String> map, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
+    protected void apply(@NotNull Map<ResourceKey<Biome>, ErosionType> map, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
         this.manager.heavyLoad(map);
+    }
+
+    private record BiomeErosionConfig(Map<ResourceKey<Biome>, ErosionType> values) {
+        public static final Codec<BiomeErosionConfig> CODEC = RecordCodecBuilder.create(instance ->
+                instance.group(
+                        Codec.unboundedMap(ResourceKey.codec(Registries.BIOME), ErosionType.CODEC)
+                                .fieldOf("values")
+                                .forGetter(BiomeErosionConfig::values)
+                ).apply(instance, BiomeErosionConfig::new)
+        );
     }
 }
