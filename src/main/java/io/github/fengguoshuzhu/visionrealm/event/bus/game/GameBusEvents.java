@@ -1,11 +1,13 @@
 package io.github.fengguoshuzhu.visionrealm.event.bus.game;
 
+import io.github.fengguoshuzhu.visionrealm.api.event.data.erosion.block.BlockErosionLoaderRegisterEvent;
 import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.EntityErosionController;
 import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.player.PlayerSanityController;
 import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
-import io.github.fengguoshuzhu.visionrealm.data.worldgen.features.erosion.biome.BiomeErosionReloadListener;
+import io.github.fengguoshuzhu.visionrealm.data.erosion.biome.BiomeErosionReloadListener;
 import io.github.fengguoshuzhu.visionrealm.core.registry.ModRegistries;
-import io.github.fengguoshuzhu.visionrealm.data.worldgen.features.erosion.block.BlockErosionReloadListener;
+import io.github.fengguoshuzhu.visionrealm.data.erosion.block.BlockErosionReloadListener;
+import io.github.fengguoshuzhu.visionrealm.event.bus.game.data.erosion.block.BlockErosionEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.block.BlockEntityTypeEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.EntitySpawnEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.EntityTickEvents;
@@ -98,5 +100,10 @@ public class GameBusEvents {
     public static void onAddReloadListenerEvent(AddReloadListenerEvent event) {
         event.addListener(new BiomeErosionReloadListener(new BiomeErosionManager()));
         event.addListener(new BlockErosionReloadListener(new BlockErosionKeyManager()));
+    }
+
+    @SubscribeEvent
+    public static void onBlockErosionLoaderRegister(BlockErosionLoaderRegisterEvent event) {
+        BlockErosionEvents.onBlockErosionLoaderRegister(event);
     }
 }

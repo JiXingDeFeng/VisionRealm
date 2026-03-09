@@ -71,6 +71,6 @@ public class ErosionType {
 
     @Override
     public String toString() {
-        return String.format("ErosionType[%s, %s, %s]]", this.name, this.block, this.entity);
+        return "ErosionType[" + this.name + ", " + this.block + ", " + this.entity + "]]";
     }
 }

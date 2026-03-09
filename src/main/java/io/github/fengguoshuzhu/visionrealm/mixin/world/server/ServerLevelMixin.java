@@ -8,7 +8,6 @@ import io.github.fengguoshuzhu.visionrealm.common.util.world.erosion.ErosionUtil
 import io.github.fengguoshuzhu.visionrealm.common.world.erosion.block.BlockErosionKey;
 import io.github.fengguoshuzhu.visionrealm.core.block.state.BlockBehaviourExpand;
 import io.github.fengguoshuzhu.visionrealm.core.world.erosion.ErosionType;
-import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.level.ServerLevelExpand;
 import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.block.BlockErosionKeyManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerLevel.class)
-public class ServerLevelMixin implements ServerLevelExpand {
+public class ServerLevelMixin {
 
     @Unique private final ServerLevel visionRealm$level = (ServerLevel) (Object) this;
 

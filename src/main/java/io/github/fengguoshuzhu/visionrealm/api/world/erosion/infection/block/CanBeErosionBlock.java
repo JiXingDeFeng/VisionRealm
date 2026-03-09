@@ -41,14 +41,14 @@ public interface CanBeErosionBlock<T, R> extends CanBeErosion<Block, R, T> {
      * to {@link #onEroded(Object, Level, BlockPos, ErosionType)}.
      * </p>
      *
-     * @param target {@inheritDoc}
+     * @param result {@inheritDoc}
      * @param level  {@inheritDoc}
      * @param pos    {@inheritDoc} (converted to BlockPos)
      * @param type   {@inheritDoc}
      */
     @Override
-    default void onEroded(R target, Level level, Vec3 pos, ErosionType type) {
-        this.onEroded(target, level, BlockPos.containing(pos), type);
+    default void onEroded(R result, Level level, Vec3 pos, ErosionType type) {
+        this.onEroded(result, level, BlockPos.containing(pos), type);
     }
 
     /**
@@ -153,7 +153,7 @@ public interface CanBeErosionBlock<T, R> extends CanBeErosion<Block, R, T> {
      *   <li>Scheduling block ticks for delayed effects</li>
      * </ul>
      *
-     * @param target The final transformed erosion result
+     * @param result The final transformed erosion result
      * @param level  The world containing the block
      * @param pos    The position of the block (as BlockPos)
      * @param type   The type of erosion that was applied
@@ -161,7 +161,7 @@ public interface CanBeErosionBlock<T, R> extends CanBeErosion<Block, R, T> {
      * @see #onEroded(Object, Level, Vec3, ErosionType)
      * @since 1.0.0
      */
-    default void onEroded(R target, Level level, BlockPos pos, ErosionType type) {
+    default void onEroded(R result, Level level, BlockPos pos, ErosionType type) {
     }
 
     /**

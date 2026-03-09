@@ -13,10 +13,23 @@ public class BiomeErosionManager {
     private static BiomeErosionManager instance;
     private final Map<ResourceKey<Biome>, ErosionType> CACHE = new HashMap<>();
 
+    /**
+     * Returns the singleton instance of the block erosion key manager.
+     *
+     * @return The manager instance, or {@code null} if not yet initialized or already stopped
+     */
     public static BiomeErosionManager getInstance() {
         return instance;
     }
 
+    /**
+     * Handles server stopping to clean up the manager instance.
+     * <p>
+     * <b>Note:</b> This method is automatically called during server shutdown
+     * and should not be invoked manually elsewhere.
+     *
+     * @param event The server stopping event
+     */
     public static void serverStopping(ServerStoppingEvent event) {
         instance = null;
     }

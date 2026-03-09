@@ -10,7 +10,7 @@ import static net.minecraft.world.level.block.state.properties.WoodType.register
 public class ModWoodTypes {
     public static final WoodType BLOOD_CORRODED_CHERRY = register(
             new WoodType(
-                    String.format("%s:blood_corroded_cherry", VisionRealm.MOD_ID),
+                    VisionRealm.MOD_ID + ":blood_corroded_cherry",
                     ModBlockSetTypes.BLOOD_CORRODED_CHERRY,
                     SoundType.CHERRY_WOOD,
                     SoundType.CHERRY_WOOD_HANGING_SIGN,

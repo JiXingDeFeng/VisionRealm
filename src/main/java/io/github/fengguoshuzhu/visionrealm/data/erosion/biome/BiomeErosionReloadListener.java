@@ -1,4 +1,4 @@
-package io.github.fengguoshuzhu.visionrealm.data.worldgen.features.erosion.biome;
+package io.github.fengguoshuzhu.visionrealm.data.erosion.biome;
 
 import com.google.gson.*;
 import com.mojang.serialization.Codec;
@@ -35,9 +35,7 @@ public class BiomeErosionReloadListener extends SimplePreparableReloadListener<M
         resourceManager.listResources(path, fileName -> fileName.getPath().endsWith(".json"))
                 .forEach((fileId, resource) -> {
                     try (var reader = resource.openAsReader()) {
-                        JsonElement element = JsonParser.parseReader(reader);
-                        VisionRealm.LOGGER.info("\n\n{}\n", element);
-                        BiomeErosionConfig config = BiomeErosionConfig.CODEC.decode(JsonOps.INSTANCE, element)
+                        BiomeErosionConfig config = BiomeErosionConfig.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(reader))
                                 .getOrThrow(JsonParseException::new)
                                 .getFirst();
                         biomeErosionMap.putAll(config.values());
@@ -45,7 +43,6 @@ public class BiomeErosionReloadListener extends SimplePreparableReloadListener<M
                         VisionRealm.LOGGER.error(e.getMessage(), e);
                     }
                 });
-        VisionRealm.LOGGER.info("\n\n群系完成\n");
         return biomeErosionMap;
     }
 

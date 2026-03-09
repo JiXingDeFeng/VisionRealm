@@ -1,40 +1,76 @@
 package io.github.fengguoshuzhu.visionrealm.manager.world.erosion.block;
 
 import io.github.fengguoshuzhu.visionrealm.common.world.erosion.block.BlockErosionKey;
-import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BlockErosionKeyManager {
-    private static BlockErosionKeyManager instance;
-    private final Map<Block, BlockErosionKey<Block, BlockState>> BLOCK_MAP = new HashMap<>();
-    private final Map<Block, BlockErosionKey<EntityType<Entity>, Entity>> ENTITY_MAP = new HashMap<>();
+    protected static BlockErosionKeyManager instance;
+    protected final Map<Block, WeightedRandomList<BlockErosionKey<?, ?>>> BLOCK_EROSION_KEY_MAP = new HashMap<>();
+    protected final RandomSource random = RandomSource.create();
 
+    /**
+     * Returns the singleton instance of the block erosion key manager.
+     *
+     * @return The manager instance, or {@code null} if not yet initialized or already stopped
+     */
     public static BlockErosionKeyManager getInstance() {
         return instance;
     }
 
+    /**
+     * Handles server stopping to clean up the manager instance.
+     * <p>
+     * <b>Note:</b> This method is automatically called during server shutdown
+     * and should not be invoked manually elsewhere.
+     *
+     * @param event The server stopping event
+     */
     public static void serverStopping(ServerStoppingEvent event) {
         instance = null;
     }
 
-    public void heavyLoad(Map<Block, BlockErosionKey<Block, BlockState>> block, Map<Block, BlockErosionKey<EntityType<Entity>, Entity>> entity) {
-        block.forEach((key, blockErosionKey) -> {
-            blockErosionKey.init();
-            this.BLOCK_MAP.put(key, blockErosionKey);
-        });
-        this.ENTITY_MAP.putAll(entity);
+    /**
+     * Loads and initializes erosion keys from multiple configuration maps.
+     * <p>
+     * This method processes all loaded erosion key definitions, initializes them,
+     * and organizes them by source block for efficient retrieval.
+     *
+     * @param keys A collection of maps containing block-to-erosion-key mappings
+     */
+    public void loadFromMap(Collection<Map<Block, BlockErosionKey<Object, Object>>> keys) {
+        Map<Block, List<BlockErosionKey<?, ?>>> newKeys = new HashMap<>();
+        for (Map<Block, BlockErosionKey<Object, Object>> map : keys) {
+            for (Map.Entry<Block, BlockErosionKey<Object, Object>> entry : map.entrySet()) {
+                BlockErosionKey<?, ?> key = entry.getValue();
+                if (!key.isInitialized()) key.init();
+                newKeys.computeIfAbsent(entry.getKey(), type -> new ArrayList<>())
+                        .add(key);
+            }
+        }
+
+        newKeys.forEach((block, blockKeyList) ->
+                this.BLOCK_EROSION_KEY_MAP.put(block, WeightedRandomList.create(blockKeyList))
+        );
         instance = this;
-        block.forEach((key, value) -> VisionRealm.LOGGER.info("\n\n{}: {}", key, value));
     }
 
-    public BlockErosionKey<Block, BlockState> get(Block source) {
-        return BLOCK_MAP.get(source);
+    /**
+     * Retrieves a random erosion key for the specified source block.
+     * <p>
+     * The returned key is selected randomly from the weighted list
+     * associated with the block, if any exists.
+     *
+     * @param source The source block to get an erosion key for
+     * @return A randomly selected erosion key, or {@code null} if none available
+     */
+    public BlockErosionKey<?, ?> get(Block source) {
+        return this.BLOCK_EROSION_KEY_MAP.containsKey(source)
+                ? this.BLOCK_EROSION_KEY_MAP.get(source).getRandom(this.random).orElse(null)
+                : null;
     }
 }
