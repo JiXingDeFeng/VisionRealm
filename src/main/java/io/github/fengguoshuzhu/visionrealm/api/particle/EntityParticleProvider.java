@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
  *   <li><b>Spawn particles</b> - Particles triggered when an entity is created/spawned</li>
  *   <li><b>Hurt particles</b> - Particles displayed when an entity takes damage</li>
  *   <li><b>Continuous particles</b> - Particles generated each tick during entity updates</li>
- *   <li><b>Death particles</b> - WeightedParticleGroup effects played when an entity dies</li>
+ *   <li><b>Death particles</b> - ParticleConfig effects played when an entity dies</li>
  * </ol>
  * </p>
  *
@@ -23,8 +23,8 @@ import org.jetbrains.annotations.Nullable;
  * <pre>{@code
  * public class FlameZombie extends Zombie implements EntityParticleProvider {
  *     @Override
- *     public WeightedParticleGroup getDeathParticles() {
- *         return WeightedParticleGroup.of(ParticleTypes.FLAME, 30, 0.02);
+ *     public ParticleConfig getDeathParticles() {
+ *         return ModifiableParticleConfig.of(ParticleTypes.FLAME, 30, 0.02);
  *     }
  * }
  * }</pre>

@@ -1,0 +1,9 @@
+{
+  "block": "minecraft:cherry_button",
+  "keys": [
+    {
+      "biome": "visionrealm:blood_corroded_cherry_grove",
+      "target": "visionrealm:blood_corroded_cherry_button"
+    }
+  ]
+}

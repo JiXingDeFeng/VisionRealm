@@ -1,0 +1,9 @@
+{
+  "block": "minecraft:cherry_wall_hanging_sign",
+  "keys": [
+    {
+      "biome": "visionrealm:blood_corroded_cherry_grove",
+      "target": "visionrealm:blood_corroded_cherry_wall_hanging_sign"
+    }
+  ]
+}

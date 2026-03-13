@@ -105,11 +105,6 @@ public abstract class EntityErosionControllerMixin implements EntityErosionContr
     }
 
     @Override
-    public boolean canBeReducedNaturally(ErosionType type) {
-        return true;
-    }
-
-    @Override
     public void setErosionType(ErosionType type) {
         this.visionRealm$erosionType = type;
     }

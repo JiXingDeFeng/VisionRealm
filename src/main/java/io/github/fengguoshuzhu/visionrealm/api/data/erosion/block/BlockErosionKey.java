@@ -165,16 +165,5 @@ public abstract class BlockErosionKey<T, R> implements CanBeErosionBlock<T, R>, 
                         ErosionType.CODEC.fieldOf("type").forGetter(BlockErosionKey.WeightedParticleGroup::type)
                 ).apply(particle, BlockErosionKey.WeightedParticleGroup::new)
         );
-
-        /**
-         * Factory method for creating particle groups during data pack loading.
-         *
-         * @param particle The weighted list of particle configurations
-         * @param type     The erosion type that triggers these particles
-         * @return A new particle group instance for initialization
-         */
-        protected static WeightedParticleGroup of(WeightedRandomList<WeightedParticleConfig> particle, ErosionType type) {
-            return new WeightedParticleGroup(particle, type);
-        }
     }
 }

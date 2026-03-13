@@ -62,7 +62,7 @@ public class BlockErosionHandler {
 
     public static BlockState transformBlock(Block target, Level level, BlockPos pos, ErosionType type, ErosionContext<Block> context) {
         BlockState sourceState = level.getBlockState(pos);
-        BlockState targetState = target.getStateForPlacement(context.conversionBlock());
+        BlockState targetState = target.defaultBlockState();
         targetState = BlockStateHelper.copyProperties(sourceState, targetState);
         level.setBlock(pos, targetState, Block.UPDATE_ALL_IMMEDIATE);
         return targetState;
