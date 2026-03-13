@@ -1,11 +1,11 @@
 package io.github.fengguoshuzhu.visionrealm.mixin.world.event.entity;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.erosion.infection.CanBeErosion;
-import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.EntityErosionController;
+import io.github.fengguoshuzhu.visionrealm.api.erosion.infection.CanBeErosion;
+import io.github.fengguoshuzhu.visionrealm.api.controller.entity.EntityErosionController;
 import io.github.fengguoshuzhu.visionrealm.common.util.world.erosion.ErosionUtil;
 import io.github.fengguoshuzhu.visionrealm.core.entity.ai.attributes.ModAttributes;
-import io.github.fengguoshuzhu.visionrealm.core.world.erosion.ErosionType;
-import io.github.fengguoshuzhu.visionrealm.handle.world.erosion.entity.EntityErosionHandler;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.ErosionType;
+import io.github.fengguoshuzhu.visionrealm.core.handle.erosion.entity.EntityErosionHandler;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;

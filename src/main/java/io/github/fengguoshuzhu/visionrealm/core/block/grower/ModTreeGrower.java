@@ -1,6 +1,6 @@
 package io.github.fengguoshuzhu.visionrealm.core.block.grower;
 
-import io.github.fengguoshuzhu.visionrealm.data.worldgen.features.ModTreeFeatures;
+import io.github.fengguoshuzhu.visionrealm.core.data.worldgen.features.ModTreeFeatures;
 import net.minecraft.world.level.block.grower.TreeGrower;
 
 import java.util.Optional;

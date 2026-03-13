@@ -1,6 +1,6 @@
 package io.github.fengguoshuzhu.visionrealm.common.util.world.particle;
 
-import io.github.fengguoshuzhu.visionrealm.common.world.particle.ImmutableParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.impl.particle.ImmutableParticleConfig;
 import net.minecraft.core.particles.ParticleTypes;
 
 public class ParticleTemplates {

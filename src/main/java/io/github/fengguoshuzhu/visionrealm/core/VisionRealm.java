@@ -6,10 +6,10 @@ import io.github.fengguoshuzhu.visionrealm.core.entity.ai.attributes.ModAttribut
 import io.github.fengguoshuzhu.visionrealm.core.item.ItemGroups;
 import io.github.fengguoshuzhu.visionrealm.core.item.ModItems;
 import io.github.fengguoshuzhu.visionrealm.core.particle.ModParticleTypes;
-import io.github.fengguoshuzhu.visionrealm.core.registry.ModRegistries;
+import io.github.fengguoshuzhu.visionrealm.common.registry.ModRegistries;
 import io.github.fengguoshuzhu.visionrealm.core.sound.ModSounds;
-import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.biome.BiomeErosionManager;
-import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.block.BlockErosionKeyManager;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.manager.biome.BiomeErosionManager;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.manager.block.BlockErosionKeyManager;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;

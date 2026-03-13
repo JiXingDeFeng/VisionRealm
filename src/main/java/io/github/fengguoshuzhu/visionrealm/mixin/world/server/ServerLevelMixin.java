@@ -1,14 +1,14 @@
 package io.github.fengguoshuzhu.visionrealm.mixin.world.server;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.fengguoshuzhu.visionrealm.api.world.erosion.infection.ImmuneErosion;
-import io.github.fengguoshuzhu.visionrealm.api.world.erosion.infection.block.CanBeErosionBlock;
-import io.github.fengguoshuzhu.visionrealm.api.world.erosion.spreader.block.ErosionSpreaderBlock;
+import io.github.fengguoshuzhu.visionrealm.api.erosion.infection.ImmuneErosion;
+import io.github.fengguoshuzhu.visionrealm.api.erosion.infection.block.CanBeErosionBlock;
+import io.github.fengguoshuzhu.visionrealm.api.erosion.spreader.block.ErosionSpreaderBlock;
 import io.github.fengguoshuzhu.visionrealm.common.util.world.erosion.ErosionUtil;
-import io.github.fengguoshuzhu.visionrealm.common.world.erosion.block.BlockErosionKey;
+import io.github.fengguoshuzhu.visionrealm.impl.erosion.block.BaseBlockErosionKey;
 import io.github.fengguoshuzhu.visionrealm.core.block.state.BlockBehaviourExpand;
-import io.github.fengguoshuzhu.visionrealm.core.world.erosion.ErosionType;
-import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.block.BlockErosionKeyManager;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.ErosionType;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.manager.block.BlockErosionKeyManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -53,7 +53,7 @@ public class ServerLevelMixin {
                         && (!(block instanceof BlockBehaviourExpand expand) || expand.canBeEroded())) {
                     canBeErodedBlock.randomTickInfection(blockstate, serverLevel, blockpos1, serverLevel.getRandom());
                 } else {
-                    BlockErosionKey<?, ?> blockErosionKey = BlockErosionKeyManager.getInstance().get(block);
+                    BaseBlockErosionKey<?, ?> blockErosionKey = BlockErosionKeyManager.getInstance().get(block);
                     if (blockErosionKey != null && serverLevel.getRandom().nextFloat() <= blockErosionKey.conversionProbability()) {
                         blockErosionKey.randomTickInfection(blockstate, serverLevel, blockpos1, serverLevel.getRandom());
                     }

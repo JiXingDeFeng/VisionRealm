@@ -1,6 +1,6 @@
 package io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.EntityParticleProvider;
+import io.github.fengguoshuzhu.visionrealm.api.particle.EntityParticleProvider;
 import net.minecraft.world.entity.Entity;
 
 public class EntityTickEvents {

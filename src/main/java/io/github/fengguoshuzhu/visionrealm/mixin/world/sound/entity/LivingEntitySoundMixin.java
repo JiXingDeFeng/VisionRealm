@@ -1,6 +1,6 @@
 package io.github.fengguoshuzhu.visionrealm.mixin.world.sound.entity;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.entity.LivingEntityExtensions;
+import io.github.fengguoshuzhu.visionrealm.api.entity.LivingEntityExtensions;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;

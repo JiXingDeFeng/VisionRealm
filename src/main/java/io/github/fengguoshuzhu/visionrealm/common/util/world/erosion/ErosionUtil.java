@@ -1,7 +1,7 @@
 package io.github.fengguoshuzhu.visionrealm.common.util.world.erosion;
 
-import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.biome.BiomeErosionManager;
-import io.github.fengguoshuzhu.visionrealm.core.world.erosion.ErosionType;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.manager.biome.BiomeErosionManager;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.ErosionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;

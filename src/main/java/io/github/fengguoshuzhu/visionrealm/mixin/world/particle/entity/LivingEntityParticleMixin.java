@@ -1,8 +1,8 @@
 package io.github.fengguoshuzhu.visionrealm.mixin.world.particle.entity;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.EntityParticleProvider;
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.ParticleConfig;
-import io.github.fengguoshuzhu.visionrealm.common.world.particle.ModifiableParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.api.particle.EntityParticleProvider;
+import io.github.fengguoshuzhu.visionrealm.api.particle.ParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.impl.particle.ModifiableParticleConfig;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;

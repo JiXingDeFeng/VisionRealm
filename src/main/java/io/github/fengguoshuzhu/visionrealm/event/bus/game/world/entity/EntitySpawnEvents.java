@@ -1,7 +1,7 @@
 package io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.EntityParticleProvider;
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.ParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.api.particle.EntityParticleProvider;
+import io.github.fengguoshuzhu.visionrealm.api.particle.ParticleConfig;
 import io.github.fengguoshuzhu.visionrealm.core.entity.Entities;
 import io.github.fengguoshuzhu.visionrealm.core.entity.custom.monster.TheForgottenEntity;
 import net.minecraft.world.entity.Entity;

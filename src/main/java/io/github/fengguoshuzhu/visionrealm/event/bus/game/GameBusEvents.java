@@ -1,12 +1,12 @@
 package io.github.fengguoshuzhu.visionrealm.event.bus.game;
 
-import io.github.fengguoshuzhu.visionrealm.api.event.data.erosion.block.BlockErosionLoaderRegisterEvent;
-import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.EntityErosionController;
-import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.player.PlayerSanityController;
+import io.github.fengguoshuzhu.visionrealm.api.event.erosion.block.BlockErosionLoaderRegisterEvent;
+import io.github.fengguoshuzhu.visionrealm.api.controller.entity.EntityErosionController;
+import io.github.fengguoshuzhu.visionrealm.api.controller.entity.player.PlayerSanityController;
 import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
-import io.github.fengguoshuzhu.visionrealm.data.erosion.biome.BiomeErosionReloadListener;
-import io.github.fengguoshuzhu.visionrealm.core.registry.ModRegistries;
-import io.github.fengguoshuzhu.visionrealm.data.erosion.block.BlockErosionReloadListener;
+import io.github.fengguoshuzhu.visionrealm.common.data.erosion.biome.BiomeErosionReloadListener;
+import io.github.fengguoshuzhu.visionrealm.common.registry.ModRegistries;
+import io.github.fengguoshuzhu.visionrealm.common.data.erosion.block.BlockErosionReloadListener;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.data.erosion.block.BlockErosionEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.block.BlockEntityTypeEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.EntitySpawnEvents;
@@ -14,8 +14,8 @@ import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.EntityTic
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.LivingTickEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.player.PlayerEvents;
 import io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.player.PlayerTickEvents;
-import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.biome.BiomeErosionManager;
-import io.github.fengguoshuzhu.visionrealm.manager.world.erosion.block.BlockErosionKeyManager;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.manager.biome.BiomeErosionManager;
+import io.github.fengguoshuzhu.visionrealm.common.erosion.manager.block.BlockErosionKeyManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

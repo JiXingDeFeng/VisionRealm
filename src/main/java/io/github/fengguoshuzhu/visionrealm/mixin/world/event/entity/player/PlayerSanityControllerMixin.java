@@ -1,6 +1,6 @@
 package io.github.fengguoshuzhu.visionrealm.mixin.world.event.entity.player;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.player.PlayerSanityController;
+import io.github.fengguoshuzhu.visionrealm.api.controller.entity.player.PlayerSanityController;
 import io.github.fengguoshuzhu.visionrealm.core.entity.ai.attributes.ModAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;

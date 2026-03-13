@@ -1,7 +1,7 @@
 package io.github.fengguoshuzhu.visionrealm.core.block;
 
 import com.mojang.serialization.MapCodec;
-import io.github.fengguoshuzhu.visionrealm.api.world.erosion.infection.ImmuneErosion;
+import io.github.fengguoshuzhu.visionrealm.api.erosion.infection.ImmuneErosion;
 import io.github.fengguoshuzhu.visionrealm.core.particle.ModParticleTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

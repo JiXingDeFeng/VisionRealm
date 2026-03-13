@@ -2,9 +2,9 @@ package io.github.fengguoshuzhu.visionrealm.core.entity.custom;
 
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.EntityParticleProvider;
-import io.github.fengguoshuzhu.visionrealm.api.world.entity.LivingEntityExtensions;
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.ParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.api.particle.EntityParticleProvider;
+import io.github.fengguoshuzhu.visionrealm.api.entity.LivingEntityExtensions;
+import io.github.fengguoshuzhu.visionrealm.api.particle.ParticleConfig;
 import io.github.fengguoshuzhu.visionrealm.core.Config;
 import io.github.fengguoshuzhu.visionrealm.core.VisionRealm;
 import io.github.fengguoshuzhu.visionrealm.core.block.ModBlocks;

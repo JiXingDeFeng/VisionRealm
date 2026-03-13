@@ -1,9 +1,9 @@
 package io.github.fengguoshuzhu.visionrealm.core.entity.custom;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.EntityParticleProvider;
-import io.github.fengguoshuzhu.visionrealm.api.world.particle.ParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.api.particle.EntityParticleProvider;
+import io.github.fengguoshuzhu.visionrealm.api.particle.ParticleConfig;
 import io.github.fengguoshuzhu.visionrealm.common.util.world.BlockPosUtil;
-import io.github.fengguoshuzhu.visionrealm.common.world.particle.ModifiableParticleConfig;
+import io.github.fengguoshuzhu.visionrealm.impl.particle.ModifiableParticleConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -59,7 +59,7 @@ public abstract class Photophobic extends PathfinderMob implements EntityParticl
 
     @Nullable
     public ParticleConfig getVanishParticles() {
-        return ModifiableParticleConfig.of(ParticleTypes.LARGE_SMOKE, 8, 0.02, this.getBoundingBox().getXsize() / 2,
+        return ModifiableParticleConfig.of(ParticleTypes.LARGE_SMOKE, 8, 8, 0.02, this.getBoundingBox().getXsize() / 2,
                 this.getBoundingBox().getYsize() / 2, this.getBoundingBox().getZsize() / 2, 0, this.getBoundingBox().getYsize() / 2, 0);
     }
 
@@ -155,7 +155,7 @@ public abstract class Photophobic extends PathfinderMob implements EntityParticl
     private void addVanishParticles() {
         ParticleConfig particleConfig = this.getVanishParticles();
         if (particleConfig != null) {
-            ParticleConfig.spawnParticles(particleConfig, this, this.level(), particleConfig.spreadY() + 1);
+            ParticleConfig.spawnParticles(particleConfig, this.position(), this.level(), particleConfig.spreadY() + 1);
         }
     }
 

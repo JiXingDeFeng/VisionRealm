@@ -1,6 +1,6 @@
 package io.github.fengguoshuzhu.visionrealm.event.bus.game.world.entity.player;
 
-import io.github.fengguoshuzhu.visionrealm.api.world.controller.entity.player.PlayerSanityController;
+import io.github.fengguoshuzhu.visionrealm.api.controller.entity.player.PlayerSanityController;
 import net.minecraft.world.entity.player.Player;
 
 public class PlayerTickEvents {
