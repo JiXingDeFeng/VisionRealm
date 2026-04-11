@@ -2,7 +2,7 @@
   "block": "minecraft:cherry_sign",
   "keys": [
     {
-      "biome": "visionrealm:blood_corroded_cherry_grove",
+      "type": "visionrealm:blood",
       "target": "visionrealm:blood_corroded_cherry_sign"
     }
   ]
