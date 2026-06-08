@@ -34,18 +34,18 @@ import org.jetbrains.annotations.NotNull;
  * <b>Example 1: Custom entity renderer implementation</b>
  * <pre>{@code
  * // Basic implementation example
- * public class MyEntityRenderer<T extends MyEntity> extends EntityRenderer<T>
- *         implements EntityRenderRedirector<T> {
+ * public class MyEntityRenderer<TargetCustomizer extends MyEntity> extends EntityRenderer<TargetCustomizer>
+ *         implements EntityRenderRedirector<TargetCustomizer> {
  *
- *     private final EntityModel<T> model;
+ *     private final EntityModel<TargetCustomizer> model;
  *
- *     public MyEntityRenderer(EntityRendererProvider.Context context, EntityModel<T> model) {
+ *     public MyEntityRenderer(EntityRendererProvider.Context context, EntityModel<TargetCustomizer> model) {
  *         super(context);
  *         this.model = model;
  *     }
  *
  *     @Override
- *     public void redirectRender(EntityRenderer<T> renderer, T entity,
+ *     public void redirectRender(EntityRenderer<TargetCustomizer> renderer, TargetCustomizer entity,
  *                       float entityYaw, float partialTicks, PoseStack poseStack,
  *                       MultiBufferSource bufferSource, int packedLight) {
  *         // Custom rendering logic here
@@ -56,7 +56,7 @@ import org.jetbrains.annotations.NotNull;
  *     }
  *
  *     @Override
- *     public ResourceLocation getTextureLocation(T entity) {
+ *     public ResourceLocation getTextureLocation(TargetCustomizer entity) {
  *         return entity.getCustomTexture();
  *     }
  * }
@@ -74,7 +74,7 @@ import org.jetbrains.annotations.NotNull;
  * @see #redirectRenderToBuffer(EntityModel, T, PoseStack, VertexConsumer, int, int, int)
  *
  * @author JiXingDeFeng
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface EntityRenderRedirector<T extends Entity> {
 

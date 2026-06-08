@@ -2,7 +2,7 @@ package io.github.jixingdefeng.visionrealm.core.entity.custom;
 
 import io.github.jixingdefeng.visionrealm.api.particle.SingletonParticleConfig;
 import io.github.jixingdefeng.visionrealm.api.particle.provider.EntityParticleProvider;
-import io.github.jixingdefeng.visionrealm.common.util.world.BlockPosUtil;
+import io.github.jixingdefeng.visionrealm.common.util.world.pos.BlockPosUtil;
 import io.github.jixingdefeng.visionrealm.impl.particle.singleton.ModifiableParticleConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;

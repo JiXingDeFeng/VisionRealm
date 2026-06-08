@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  *
  * @author JiXingDeFeng
  * @see PlayerSanityControllerMixin
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface PlayerSanityController {
 

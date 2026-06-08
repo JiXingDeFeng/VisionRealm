@@ -3,7 +3,7 @@ package io.github.jixingdefeng.visionrealm.api.event.erosion.entity;
 import io.github.jixingdefeng.visionrealm.api.controller.entity.EntityErosionController;
 import io.github.jixingdefeng.visionrealm.api.erosion.infection.CanBeErosion;
 import io.github.jixingdefeng.visionrealm.api.event.erosion.ErosionEvent;
-import io.github.jixingdefeng.visionrealm.common.erosion.ErosionType;
+import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -26,7 +26,7 @@ import net.neoforged.bus.api.ICancellableEvent;
  * @see ErosionEvent
  * @see ErosionType
  * @see EntityErosionController#completeErosion(ErosionType)
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
 
  */
 public abstract class EntityErosionEvent<T> extends ErosionEvent<Entity, T> {
@@ -57,9 +57,7 @@ public abstract class EntityErosionEvent<T> extends ErosionEvent<Entity, T> {
      * </p>
      *
      * @param <T> The type of transformation result
-     *
-     * @since 0.0.1-dev-1
-
+     * @since 0.0.1-dev
      */
     public static class Pre<T> extends EntityErosionEvent<T> implements ICancellableEvent {
 
@@ -106,8 +104,7 @@ public abstract class EntityErosionEvent<T> extends ErosionEvent<Entity, T> {
      * </p>
      *
      * @param <T> The type of transformation result
-     *
-     * @since 0.0.1-dev-1
+     * @since 0.0.1-dev
      */
     public static class Post<T, R> extends EntityErosionEvent<T> {
         private final boolean success;

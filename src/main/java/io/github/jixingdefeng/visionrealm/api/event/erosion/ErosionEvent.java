@@ -2,7 +2,7 @@ package io.github.jixingdefeng.visionrealm.api.event.erosion;
 
 import io.github.jixingdefeng.visionrealm.api.event.erosion.block.BlockErosionEvent;
 import io.github.jixingdefeng.visionrealm.api.event.erosion.entity.EntityErosionEvent;
-import io.github.jixingdefeng.visionrealm.common.erosion.ErosionType;
+import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
 import net.minecraft.world.entity.Entity;
@@ -21,7 +21,7 @@ import net.neoforged.bus.api.Event;
  *
  * <p><b>Type Parameters:</b></p>
  * <ul>
- *   <li><b>T</b> - The type of source being eroded (e.g., {@link Entity}, {@link Block})</li>
+ *   <li><b>TargetCustomizer</b> - The type of source being eroded (e.g., {@link Entity}, {@link Block})</li>
  *   <li><b>R</b> - The type of erosion result (can be any type representing the transformation outcome)</li>
  * </ul>
  *
@@ -31,7 +31,7 @@ import net.neoforged.bus.api.Event;
  * @see EntityErosionEvent
  * @see BlockErosionEvent
  * @see ErosionType
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public abstract class ErosionEvent<T, R> extends Event {
     private final T source;

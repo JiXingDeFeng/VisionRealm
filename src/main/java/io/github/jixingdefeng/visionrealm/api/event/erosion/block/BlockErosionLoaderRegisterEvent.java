@@ -1,9 +1,10 @@
 package io.github.jixingdefeng.visionrealm.api.event.erosion.block;
 
 import com.mojang.serialization.Codec;
+import io.github.jixingdefeng.visionrealm.common.erosion.manager.infection.block.BlockErosionEntryManager;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import io.github.jixingdefeng.visionrealm.core.data.erosion.block.BlockErosionReloadListener;
-import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block.BaseBlockErosionKey;
+import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block_entry.BaseBlockErosionEntry;
 import net.neoforged.bus.api.Event;
 
 import java.util.ArrayList;
@@ -30,10 +31,10 @@ import java.util.List;
  *
  * @author JiXingDeFeng
  * @see BlockErosionReloadListener
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public class BlockErosionLoaderRegisterEvent extends Event {
-    private final List<PendingLoader> pendingLoaders = new ArrayList<>();
+    private final List<BlockErosionReloadListener.PendingLoader> pendingLoaders = new ArrayList<>();
 
     public BlockErosionLoaderRegisterEvent() {
     }
@@ -42,12 +43,17 @@ public class BlockErosionLoaderRegisterEvent extends Event {
      * Registers a block erosion loader for the specified path.
      *
      * @param path  The resource path where JSON files are located (e.g., "erosion/block_erosion/custom")
-     * @param codec The codec used to decode JSON files into {@link BaseBlockErosionKey} instances
+     * @param codec The codec used to decode JSON files into {@link BaseBlockErosionEntry} instances
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void registryLoader(String path, Codec codec) {
         try {
-            this.pendingLoaders.add(new PendingLoader("erosion/block_erosion/" + path, (Codec<BaseBlockErosionKey<?, ?>>) codec));
+            this.pendingLoaders.add(
+                    new BlockErosionReloadListener.PendingLoader(
+                            BlockErosionEntryManager.PATH + '/' + path,
+                            (Codec<BaseBlockErosionEntry<?, ?>>) codec
+                    )
+            );
         } catch (Exception e) {
             VisionRealm.LOGGER.error("Failed to load block erosion loader for path '{}': codec mismatch", path, e);
         }
@@ -58,16 +64,7 @@ public class BlockErosionLoaderRegisterEvent extends Event {
      *
      * @return A new list containing all registered loaders
      */
-    public List<PendingLoader> getPendingLoaders() {
+    public List<BlockErosionReloadListener.PendingLoader> getPendingLoaders() {
         return new ArrayList<>(this.pendingLoaders);
-    }
-
-    /**
-     * Represents a pending block erosion loader registration.
-     *
-     * @param path  The resource path for JSON files
-     * @param codec The codec for decoding {@link BaseBlockErosionKey} instances
-     */
-    public record PendingLoader(String path, Codec<BaseBlockErosionKey<?, ?>> codec) {
     }
 }

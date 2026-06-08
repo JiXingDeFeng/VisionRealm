@@ -2,7 +2,7 @@ package io.github.jixingdefeng.visionrealm.api.event.erosion.block;
 
 import io.github.jixingdefeng.visionrealm.api.erosion.infection.CanBeErosion;
 import io.github.jixingdefeng.visionrealm.api.event.erosion.ErosionEvent;
-import io.github.jixingdefeng.visionrealm.common.erosion.ErosionType;
+import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,7 +26,7 @@ import net.neoforged.bus.api.ICancellableEvent;
  * @author JiXingDeFeng
  * @see ErosionEvent
  * @see ErosionType
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public abstract class BlockErosionEvent<T> extends ErosionEvent<Block, T> {
 
@@ -56,9 +56,7 @@ public abstract class BlockErosionEvent<T> extends ErosionEvent<Block, T> {
      * </p>
      *
      * @param <T> The type of transformation result
-     *
-     * @since 0.0.1-dev-1
-    
+     * @since 0.0.1-dev
      */
     public static class Pre<T> extends BlockErosionEvent<T> implements ICancellableEvent {
 
@@ -105,8 +103,7 @@ public abstract class BlockErosionEvent<T> extends ErosionEvent<Block, T> {
      * </p>
      *
      * @param <T> The type of transformation result
-     *
-     * @since 0.0.1-dev-1
+     * @since 0.0.1-dev
      */
     public static class Post<T, R> extends BlockErosionEvent<T> {
         private final boolean success;

@@ -1,12 +1,11 @@
 package io.github.jixingdefeng.visionrealm.api.controller.entity;
 
-import io.github.jixingdefeng.visionrealm.common.erosion.ErosionType;
+import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
 import io.github.jixingdefeng.visionrealm.event.bus.game.GameBusEvents;
 import io.github.jixingdefeng.visionrealm.mixin.world.event.entity.EntityErosionControllerMixin;
 import net.minecraft.world.damagesource.DamageSource;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * CanBeErodedEntity Erosion Update Interface
@@ -29,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author JiXingDeFeng
  * @see EntityErosionControllerMixin
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface EntityErosionController {
 
@@ -50,8 +49,73 @@ public interface EntityErosionController {
      * @see GameBusEvents#onEntityTick(EntityTickEvent.Pre)
      * @see EntityErosionControllerMixin#updateErosion()
      */
-    default void updateErosion() {
-    }
+    void updateErosion();
+
+    /**
+     * Sets the erosion progress for a specific erosion type.
+     * <p>
+     * Values should be between 0 and 10000 inclusive, where 0 = no erosion,
+     * 10000 = fully eroded.
+     * </p>
+     *
+     * @param type     The erosion type to set
+     * @param progress The erosion progress value (0-10000)
+     */
+    void setErosionProgress(ErosionType type, short progress);
+
+    /**
+     * Gets the current value of the erosion decrease timer.
+     * <p>
+     * Returns the remaining ticks to wait until the next natural erosion decrease.
+     * When this value is less than or equal to 0, the next erosion decrease will trigger.
+     * This value decreases each game tick (typically handled by an event processor).
+     *
+     * @return The remaining ticks to wait, 0 or negative means decrease can trigger immediately
+     *
+     * @see #setErosionDecreaseTimer(ErosionType, int) Set the timer value
+     * @see #getErosionDecreaseInterval(ErosionType) Get the decrease interval
+     */
+    int getErosionDecreaseTimer(ErosionType type);
+
+    /**
+     * Sets the current value of the erosion decrease timer.
+     * <p>
+     * Manually sets the remaining ticks to wait until the next natural erosion decrease.
+     * Typically used for:
+     * <ul>
+     *   <li>Initializing the timer (set to decrease interval)</li>
+     *   <li>Resetting the timer (after decrease triggers)</li>
+     *   <li>External event influences (entering special biomes, using items, etc.)</li>
+     * </ul>
+     *
+     * @param time The remaining ticks to set, positive values recommended (negative means trigger immediately)
+     *
+     * @see #getErosionDecreaseTimer(ErosionType) Get the current timer value
+     * @see #getErosionDecreaseInterval(ErosionType) Get the decrease interval
+     */
+    void setErosionDecreaseTimer(ErosionType type, int time);
+
+    /**
+     * Gets the current erosion progress for a specific erosion type.
+     *
+     * @param type The erosion type
+     * @return The erosion progress value (0-10000)
+     */
+    short getErosionProgress(ErosionType type);
+
+    /**
+     * Gets the erosion type with the highest progress value.
+     *
+     * @return The dominant erosion type, or {@link ErosionType#NONE} if no erosion present
+     */
+    ErosionType getTypeWithMaxValue();
+
+    /**
+     * Gets the maximum erosion progress value among all erosion types.
+     *
+     * @return The highest erosion progress value (0-10000)
+     */
+    short getMaxErosionProgress();
 
     /**
      * Erosion update method called when taking damage.
@@ -118,37 +182,6 @@ public interface EntityErosionController {
     }
 
     /**
-     * Sets the type of erosion affecting the entity.
-     * <p>
-     * Determines what kind of erosion (e.g., BLOOD, CURSE, DREAD) is currently
-     * affecting the entity. This influences visual effects, damage types,
-     * and transformation outcomes.
-     * </p>
-     *
-     * @param type The erosion type to set
-     * @see #getErosionType()
-     * @see ErosionType
-     */
-    default void setErosionType(ErosionType type) {
-    }
-
-    /**
-     * Gets the current erosion type.
-     * <p>
-     * Returns the type of erosion currently affecting the entity.
-     * The erosion type determines the visual style and transformation outcome.
-     * </p>
-     *
-     * @return The current erosion type, never null (defaults to {@link ErosionType#DREAD})
-     * @see #setErosionType(ErosionType)
-     * @see ErosionType
-     */
-    @NotNull
-    default ErosionType getErosionType() {
-        return ErosionType.NONE;
-    }
-
-    /**
      * Gets the time interval for erosion degree decrease.
      * <p>
      * This method controls the frequency of erosion decrease.
@@ -165,57 +198,22 @@ public interface EntityErosionController {
     }
 
     /**
-     * Gets the current value of the erosion decrease timer.
-     * <p>
-     * Returns the remaining ticks to wait until the next natural erosion decrease.
-     * When this value is less than or equal to 0, the next erosion decrease will trigger.
-     * This value decreases each game tick (typically handled by an event processor).
-     *
-     * @return The remaining ticks to wait, 0 or negative means decrease can trigger immediately
-     *
-     * @see #setErosionDecreaseTimer(ErosionType, int) Set the timer value
-     * @see #getErosionDecreaseInterval(ErosionType) Get the decrease interval
-     */
-    default int getErosionDecreaseTimer(ErosionType type) {
-        return 0;
-    }
-
-    /**
-     * Sets the current value of the erosion decrease timer.
-     * <p>
-     * Manually sets the remaining ticks to wait until the next natural erosion decrease.
-     * Typically used for:
-     * <ul>
-     *   <li>Initializing the timer (set to decrease interval)</li>
-     *   <li>Resetting the timer (after decrease triggers)</li>
-     *   <li>External event influences (entering special biomes, using items, etc.)</li>
-     * </ul>
-     *
-     * @param time The remaining ticks to set, positive values recommended (negative means trigger immediately)
-     *
-     * @see #getErosionDecreaseTimer(ErosionType) Get the current timer value
-     * @see #getErosionDecreaseInterval(ErosionType) Get the decrease interval
-     */
-    default void setErosionDecreaseTimer(ErosionType type, int time) {
-    }
-
-    /**
      * Gets the natural reduction rate of erosion value.
      * <p>
      * When the entity is in non-erosion areas and meets the natural reduction conditions,
      * the erosion value will naturally decrease at this rate per tick.
-     * This value represents the amount decreased per tick, default is 0.001 (0.1% per tick).
+     * This value represents the amount decreased per tick, default is 1 (0.1% per tick).
      * It takes approximately 1000 ticks (50 seconds) to decrease from maximum (1.0) to 0.
      * <p>
      * Note: This reduction rate applies to normal situations. Special areas or states may affect the actual reduction rate.
      *
-     * @return The amount of erosion value naturally decreased per tick, typically between 0.0 and 1.0
+     * @return The amount of erosion value naturally decreased per tick, typically between 0 and 10000
      *
      * @see #canBeReducedNaturally(ErosionType) Check if natural reduction is allowed
      * @see #getErosionDecreaseInterval(ErosionType) Get the reduction interval time
      */
-    default double naturallyReducedValue(ErosionType type) {
-        return 0.0001;
+    default short naturallyReducedValue(ErosionType type) {
+        return 10;
     }
 
     /**

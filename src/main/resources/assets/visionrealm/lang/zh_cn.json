@@ -52,7 +52,7 @@
   "visionrealm.configuration.section.visionrealm.server.toml.title": "服务端配置",
   "visionrealm.configuration.gameRules": "游戏规则",
   "visionrealm.configuration.gameRules.tooltip": "服务器游戏规则的配置",
-  "visionrealm.configuration.gameRules.button": "设置",
+  "visionrealm.configuration.gameRules.button": "游戏规则设置",
   "visionrealm.configuration.administratorVulnerable": "管理员实体是否可以被攻击",
   "visionrealm.configuration.administratorVulnerable.tooltip": "即使禁用，管理员仍然只免疫绝大多数伤害.\n某些特殊伤害（如虚空伤害）仍然有效.",
   "entity.visionrealm.administrator": "管理员",

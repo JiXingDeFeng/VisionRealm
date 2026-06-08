@@ -55,22 +55,24 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
             "Administrator",
             "UnknownUser316"
     };
-    private static final EntityDataAccessor<Integer> MODE = SynchedEntityData.defineId(AdministratorEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> TELEPORT_TARGET_PHASE =  SynchedEntityData.defineId(AdministratorEntity.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> MODE = SynchedEntityData.defineId(AdministratorEntity.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> TELEPORT_TARGET_PHASE =  SynchedEntityData.defineId(AdministratorEntity.class, EntityDataSerializers.INT);
     public final AnimationState[] TELEPORT_TARGET_ANIM = {new AnimationState(), new AnimationState()};
     public final AnimationState OBSERVE_ANIM = new AnimationState();
-    private final Map<UUID, Integer> ignoredEntities = Maps.newHashMap();
-    private final Map<UUID, AngerType> secondaryTargets = Maps.newHashMap();
-    private final int TEXTURE_ID = this.getRandom().nextInt(AdministratorEntity.TEXTURES.length);
-    private final String NAME;
-    private int existenceTime = this.getExistenceTime();
-    private int grabAnimTimer = 0;
-    private int teleportTargetAnimTimer = 0;
-    private int observeAnimTimer = 0;
-    private int modeSwitchTimer = 0;
+    protected final boolean isReally;
+    protected final Map<UUID, Integer> ignoredEntities = Maps.newHashMap();
+    protected final Map<UUID, AngerType> secondaryTargets = Maps.newHashMap();
+    protected final int TEXTURE_ID = this.getRandom().nextInt(AdministratorEntity.TEXTURES.length);
+    protected final String NAME;
+    protected int existenceTime = this.getExistenceTime();
+    protected int grabAnimTimer = 0;
+    protected int teleportTargetAnimTimer = 0;
+    protected int observeAnimTimer = 0;
+    protected int modeSwitchTimer = 0;
 
     public AdministratorEntity(EntityType<? extends AdministratorEntity> type, Level level) {
         super(type, level);
+        this.isReally = false;
         this.NAME = NAMES[this.getRandom().nextInt(NAMES.length)];
         this.setCustomNameVisible(true);
     }
@@ -180,15 +182,14 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
     }
 
     @Override
-    public boolean isAlive() {
-        return !this.isRemoved() && this.getHealth() > 5.0F;
-    }
-
-    @Override
     protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(MODE, BehaviorMode.EMPTY.getId());
         builder.define(TELEPORT_TARGET_PHASE, 0);
+    }
+
+    @Override
+    public final void setCustomName(@Nullable Component name) {
     }
 
     @Nullable
@@ -237,50 +238,17 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
     @NotNull
     @Override
     public Component getName() {
-        return MutableComponent.create(new PlainTextContents.LiteralContents(this.NAME));
+        return MutableComponent.create(new PlainTextContents.LiteralContents(this.isReally ? NAMES[1] : this.NAME));
     }
 
     @Override
-    public final void setCustomName(@Nullable Component name) {
+    public boolean isAlive() {
+        return !this.isRemoved() && this.getHealth() > 5.0F;
     }
 
-    public void addIgnoredEntities(@NotNull LivingEntity entity, int ignoreTime) {
-        this.ignoredEntities.put(entity.getUUID(), ignoreTime);
-    }
-
-    public void setTeleportTargetStage(int AnimationPhase) {
-        this.getEntityData().set(AdministratorEntity.TELEPORT_TARGET_PHASE, AnimationPhase);
-    }
-
-    public void setBehaviorMode(BehaviorMode behaviorMode) {
-        this.resetState(this.getBehaviorMode());
-        this.getEntityData().set(AdministratorEntity.MODE, behaviorMode.getId());
-        this.setExistenceTime(behaviorMode.getExistenceTime());
-        this.modeSwitchTimer = 50;
-    }
-
-    public void setExistenceTime(int existenceTime) {
-        this.existenceTime = existenceTime;
-    }
-
-    public void addSecondaryTarget(LivingEntity entity, AngerType angerType) {
-        this.secondaryTargets.put(entity.getUUID(), angerType);
-    }
-
-    public void removeSecondaryTarget(LivingEntity entity) {
-        this.secondaryTargets.remove(entity.getUUID());
-    }
-
-    public int getTextureId() {
-        return this.TEXTURE_ID;
-    }
-
-    public int getExistenceTime() {
-        return this.existenceTime;
-    }
-
-    public int getTeleportTargetStage() {
-        return this.getEntityData().get(AdministratorEntity.TELEPORT_TARGET_PHASE);
+    @Override
+    public boolean isSpectator() {
+        return this.isReally;
     }
 
     public boolean canBeAttacked() {
@@ -314,8 +282,51 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
                 || source.is(DamageTypes.GENERIC_KILL);
     }
 
+    public void setTeleportTargetStage(int AnimationPhase) {
+        this.getEntityData().set(AdministratorEntity.TELEPORT_TARGET_PHASE, AnimationPhase);
+    }
+
+    public void setBehaviorMode(BehaviorMode behaviorMode) {
+        this.resetState(this.getBehaviorMode());
+        this.getEntityData().set(AdministratorEntity.MODE, behaviorMode.getId());
+        this.setExistenceTime(behaviorMode.getExistenceTime());
+        this.modeSwitchTimer = 50;
+    }
+
+    public void addIgnoredEntities(@NotNull LivingEntity entity, int ignoreTime) {
+        this.ignoredEntities.put(entity.getUUID(), ignoreTime);
+    }
+
+    public void addSecondaryTarget(LivingEntity entity, AngerType angerType) {
+        this.secondaryTargets.put(entity.getUUID(), angerType);
+    }
+
+    public void removeSecondaryTarget(LivingEntity entity) {
+        this.secondaryTargets.remove(entity.getUUID());
+    }
+
+    public void setExistenceTime(int existenceTime) {
+        this.existenceTime = existenceTime;
+    }
+
     public BehaviorMode getBehaviorMode() {
         return BehaviorMode.byId(this.getEntityData().get(MODE));
+    }
+
+    public int getTextureId() {
+        return this.isReally ? 1 : this.TEXTURE_ID;
+    }
+
+    public int getExistenceTime() {
+        return this.existenceTime;
+    }
+
+    public int getTeleportTargetStage() {
+        return this.getEntityData().get(AdministratorEntity.TELEPORT_TARGET_PHASE);
+    }
+
+    public boolean isReally() {
+        return this.isReally;
     }
 
     protected void resetState(BehaviorMode behaviorMode) {
@@ -329,7 +340,7 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
         this.goalSelector.addGoal(1, new InterferenceGoal(this));
     }
 
-    private void updateTheIgnoreList() {
+    protected void updateTheIgnoreList() {
         if (!this.ignoredEntities.isEmpty()) {
             for (UUID uuid : this.ignoredEntities.keySet()) {
                 int ignoreTime = this.ignoredEntities.get(uuid) - 1;
@@ -342,7 +353,7 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
         }
     }
 
-    private void updateAnimation() {
+    protected void updateAnimation() {
         if (this.getTeleportTargetStage() == 1) {
             if (this.grabAnimTimer <= 0) {
                 this.grabAnimTimer = 10;
@@ -380,7 +391,7 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
         }
     }
 
-    private void updateSurvivalStatus() {
+    protected void updateSurvivalStatus() {
         if (this.modeSwitchTimer > 0) {
             --this.modeSwitchTimer;
         } else {
@@ -406,7 +417,7 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
         }
     }
 
-    private void updateExistenceTime() {
+    protected void updateExistenceTime() {
         if (this.existenceTime > 0) {
             --this.existenceTime;
         } else if (this.existenceTime == 0) {
@@ -462,7 +473,7 @@ public class AdministratorEntity extends PathfinderMob implements EntityParticle
         INTERFERENCE(4, "Interference", ofRange(600, 2400), ofRange(2, 5), fixed(2));
 
         public static final Codec<BehaviorMode> CODEC = StringRepresentable.fromEnum(BehaviorMode::values);
-        private static final IntFunction<BehaviorMode> BY_ID = ByIdMap.continuous(BehaviorMode::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+        public static final IntFunction<BehaviorMode> BY_ID = ByIdMap.continuous(BehaviorMode::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
         private final RandomSource random = RandomSource.create();
         private final IntProvider existenceTime;
         private final IntProvider particleCount;

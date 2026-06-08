@@ -1,5 +1,6 @@
 package io.github.jixingdefeng.visionrealm.gui;
 
+import io.github.jixingdefeng.visionrealm.api.controller.entity.EntityErosionController;
 import io.github.jixingdefeng.visionrealm.core.Config;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import io.github.jixingdefeng.visionrealm.core.entity.ai.attributes.ModAttributes;
@@ -41,7 +42,7 @@ public class InGameHud {
         if (type != HudType.ModernizeHud) {
             double saneValue = player.getAttributeValue(ModAttributes.SANITY);
             if (type == HudType.Default) {
-                defaultSaneHud(guiGraphics, player, saneValue, Config.HUD_SHOW_VALUES.get());
+                defaultSaneHud(guiGraphics, saneValue, Config.HUD_SHOW_VALUES.get());
             }
         }
     }
@@ -49,14 +50,14 @@ public class InGameHud {
     private static void renderErosionHud(GuiGraphics guiGraphics, Player player) {
         HudType type = Config.HUD_TYPE.get();
         if (type != HudType.ModernizeHud) {
-            double erosion = player.getAttributeValue(ModAttributes.EROSION);
+            double erosion = ((EntityErosionController) player).getMaxErosionProgress() / 10000.0;
             if (type == HudType.Default) {
                 defaultErosionHud(guiGraphics, player, erosion, Config.HUD_SHOW_VALUES.get());
             }
         }
     }
 
-    private static void defaultSaneHud(GuiGraphics guiGraphics, Player player, double saneValue, boolean displaysValues) {
+    private static void defaultSaneHud(GuiGraphics guiGraphics, double saneValue, boolean displaysValues) {
         int x = guiGraphics.guiWidth() / 2 - 175;
         int y = guiGraphics.guiHeight() - 29;
         guiGraphics.blitSprite(SANE_TEXTURES[0], x, y, 50, 25);

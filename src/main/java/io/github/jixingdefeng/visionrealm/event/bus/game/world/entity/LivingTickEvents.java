@@ -7,9 +7,7 @@ public class LivingTickEvents {
 
     public static void updateAttribute(LivingEntity entity) {
         if (!entity.level().isClientSide) {
-            if (entity instanceof EntityErosionController updatable) {
-                updatable.updateErosion();
-            }
+            ((EntityErosionController) entity).updateErosion();
         }
     }
 }

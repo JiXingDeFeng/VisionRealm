@@ -1,9 +1,0 @@
-{
-  "block": "minecraft:potted_cherry_sapling",
-  "keys": [
-    {
-      "type": "visionrealm:blood",
-      "target": "visionrealm:blood_corroded_potted_cherry_sapling"
-    }
-  ]
-}

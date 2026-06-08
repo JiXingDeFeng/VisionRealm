@@ -31,6 +31,7 @@ public class EmptyParticleConfig implements ParticleConfig {
     }
 
     @Override
+    @NotNull
     public SingletonParticleConfig getSingleton() {
         return this.particleConfig;
     }
@@ -43,7 +44,7 @@ public class EmptyParticleConfig implements ParticleConfig {
 
     @NotNull
     @Override
-    public List<ParticleConfig> getList() {
-        return this.particleConfig.getList();
+    public List<ParticleConfig> unwrap() {
+        return this.particleConfig.unwrap();
     }
 }

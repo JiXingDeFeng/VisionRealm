@@ -1,0 +1,9 @@
+{
+  "block": "minecraft:cherry_leaves",
+  "entry": [
+    {
+      "type": "visionrealm:blood",
+      "target": "visionrealm:blood_corroded_cherry_leaves"
+    }
+  ]
+}

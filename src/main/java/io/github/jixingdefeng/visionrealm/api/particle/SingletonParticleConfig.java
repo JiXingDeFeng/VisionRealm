@@ -74,7 +74,7 @@ import java.util.List;
  * @author JiXingDeFeng
  * @see ParticleConfig
  * @see WeightedParticleConfig
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface SingletonParticleConfig extends ParticleConfig {
     MapCodec<SingletonParticleConfig> CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -312,6 +312,7 @@ public interface SingletonParticleConfig extends ParticleConfig {
      * @return this
      */
     @Override
+    @NotNull
     default SingletonParticleConfig getSingleton() {
         return this;
     }
@@ -335,7 +336,7 @@ public interface SingletonParticleConfig extends ParticleConfig {
      */
     @NotNull
     @Override
-    default List<ParticleConfig> getList() {
+    default List<ParticleConfig> unwrap() {
         return List.of(this);
     }
 

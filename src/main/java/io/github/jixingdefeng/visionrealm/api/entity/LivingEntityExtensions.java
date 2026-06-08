@@ -13,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
  *
  * @author JiXingDeFeng
  * @see LivingEntity
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface LivingEntityExtensions {
 

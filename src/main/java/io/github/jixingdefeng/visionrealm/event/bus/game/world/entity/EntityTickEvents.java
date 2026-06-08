@@ -6,8 +6,6 @@ import net.minecraft.world.entity.Entity;
 public class EntityTickEvents {
 
     public static void updateParticles(Entity entity) {
-        if (entity instanceof EntityParticleProvider provider) {
-            provider.updateTickParticles(entity);
-        }
+        ((EntityParticleProvider) entity).updateTickParticles(entity);
     }
 }

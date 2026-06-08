@@ -1,7 +1,6 @@
 package io.github.jixingdefeng.visionrealm.core.block;
 
 import com.mojang.serialization.MapCodec;
-import io.github.jixingdefeng.visionrealm.api.erosion.ImmuneErosion;
 import io.github.jixingdefeng.visionrealm.core.particle.ModParticleTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +11,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-public class BloodCorrodedCherryLeavesBlock extends LeavesBlock implements ImmuneErosion {
+public class BloodCorrodedCherryLeavesBlock extends LeavesBlock {
     public static final MapCodec<BloodCorrodedCherryLeavesBlock> CODEC = simpleCodec(BloodCorrodedCherryLeavesBlock::new);
 
     @NotNull

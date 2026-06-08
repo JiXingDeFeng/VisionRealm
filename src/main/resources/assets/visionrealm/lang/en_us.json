@@ -52,7 +52,7 @@
   "visionrealm.configuration.section.visionrealm.server.toml.title": "Server Configs",
   "visionrealm.configuration.gameRules": "Game Rules",
   "visionrealm.configuration.gameRules.tooltip": "Configuration for server game rules",
-  "visionrealm.configuration.gameRules.button": "Config",
+  "visionrealm.configuration.gameRules.button": "Game Rules Config",
   "visionrealm.configuration.administratorVulnerable": "Whether Administrator entities can be attacked",
   "visionrealm.configuration.administratorVulnerable.tooltip": "If disabled, Administrators will still only be immune to the vast majority of damage.\nSome special damage (e.g., void damage) still affect them.",
   "entity.visionrealm.administrator": "Administrator",

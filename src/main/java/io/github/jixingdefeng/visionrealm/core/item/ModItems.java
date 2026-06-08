@@ -22,6 +22,11 @@ import java.util.List;
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(VisionRealm.MOD_ID);
 
+    public static final DeferredItem<Item> TEST_ITEM = ITEMS.register(
+            "test_item",
+            () -> new TestItem(new Item.Properties())
+    );
+
     // 工具
 
     // 生物蛋

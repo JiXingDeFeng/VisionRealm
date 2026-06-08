@@ -27,9 +27,9 @@ public class LivingEntitySoundMixin implements LivingEntityExtensions {
                     target = "Lnet/minecraft/world/entity/LivingEntity;playSound(Lnet/minecraft/sounds/SoundEvent;FF)V"
             )
     )
-    private void makeHurtSound(LivingEntity instance, SoundEvent soundEvent, float volume, float pitch) {
-        if (instance instanceof LivingEntityExtensions expandEntity &&  expandEntity.canMakeHurtSound()) {
-            instance.playSound(soundEvent, volume, pitch);
+    private void makeHurtSound(LivingEntity livingEntity, SoundEvent soundEvent, float volume, float pitch) {
+        if (((LivingEntityExtensions) livingEntity).canMakeHurtSound()) {
+            livingEntity.playSound(soundEvent, volume, pitch);
         }
     }
 
@@ -41,7 +41,7 @@ public class LivingEntitySoundMixin implements LivingEntityExtensions {
             )
     )
     private void makeDeathSound_1(LivingEntity livingEntity, SoundEvent soundEvent) {
-        if (livingEntity instanceof LivingEntityExtensions expandEntity && expandEntity.canMakeDeathSound()) {
+        if (((LivingEntityExtensions) livingEntity).canMakeDeathSound()) {
             livingEntity.makeSound(soundEvent);
         }
     }
@@ -53,9 +53,9 @@ public class LivingEntitySoundMixin implements LivingEntityExtensions {
                     target = "Lnet/minecraft/world/entity/LivingEntity;playSound(Lnet/minecraft/sounds/SoundEvent;FF)V"
             )
     )
-    private void makeDeathSound_2(LivingEntity instance, SoundEvent soundEvent, float volume, float pitch) {
-        if (instance instanceof LivingEntityExtensions expandEntity && expandEntity.canMakeDeathSound()) {
-            instance.playSound(soundEvent, volume, pitch);
+    private void makeDeathSound_2(LivingEntity livingEntity, SoundEvent soundEvent, float volume, float pitch) {
+        if (((LivingEntityExtensions) livingEntity).canMakeDeathSound()) {
+            livingEntity.playSound(soundEvent, volume, pitch);
         }
     }
 }

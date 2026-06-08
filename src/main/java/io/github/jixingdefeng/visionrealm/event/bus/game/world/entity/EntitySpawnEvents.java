@@ -24,12 +24,11 @@ public class EntitySpawnEvents {
 
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();
-        if (entity instanceof EntityParticleProvider entity2) {
-            if (entity2.canShowSpawnParticles()) {
-                SingletonParticleConfig particle = entity2.getSpawnParticles();
-                if (particle != null) {
-                    particle.spawnParticles(entity);
-                }
+        EntityParticleProvider provider = (EntityParticleProvider) entity;
+        if (provider.canShowSpawnParticles()) {
+            SingletonParticleConfig particle = provider.getSpawnParticles();
+            if (particle != null) {
+                particle.spawnParticles(entity);
             }
         }
     }

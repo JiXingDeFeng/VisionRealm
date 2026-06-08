@@ -30,13 +30,12 @@ import org.jetbrains.annotations.Nullable;
  * }
  * }</pre>
  *
+ * @author JiXingDeFeng
  * @see net.minecraft.client.renderer.entity.EntityRenderer#render
  * @see LivingEntity#aiStep()
  * @see LivingEntity#hurt(DamageSource, float)
  * @see LivingEntity#die(DamageSource)
- *
- * @author JiXingDeFeng
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface EntityParticleProvider {
 
@@ -126,7 +125,7 @@ public interface EntityParticleProvider {
      * Useful for ambient effects like breath, aura, or trail particles.
      * </p>
      * <p>
-     * <b>Performance Consideration:</b> Tick particles are spawned frequently
+     * <b>Performance Consideration:</b> Tickable particles are spawned frequently
      * (controlled by {@link #getParticleUpdateInterval()}). Use simple particle
      * configurations to maintain good performance.
      * </p>

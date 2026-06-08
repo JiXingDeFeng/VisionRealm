@@ -2,11 +2,8 @@ package io.github.jixingdefeng.visionrealm.api.particle;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import io.github.jixingdefeng.visionrealm.common.manager.particle.ParticleConfigManager;
-import io.github.jixingdefeng.visionrealm.common.util.key.FingerprintUtil;
+import io.github.jixingdefeng.visionrealm.common.particle.ParticleConfigLoader;
 import io.github.jixingdefeng.visionrealm.common.util.particle.ParticleTemplates;
-import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import io.github.jixingdefeng.visionrealm.impl.particle.list.WeightedParticleConfig;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -37,29 +34,22 @@ import java.util.List;
  * @see SingletonParticleConfig Singleton particle configuration (single instance, no selection logic)
  * @see WeightedParticleConfig Weighted particle configuration list (multiple instances with weights, random selection)
  * @see ParticleTemplates Particle configuration template (predefined particle configuration templates)
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public interface ParticleConfig {
     Codec<ParticleConfig> CODEC = ResourceLocation.CODEC.dispatch(
             ParticleConfig::getType,
-            ParticleConfigManager::getCodecForType
+            ParticleConfigLoader::getCodec
     );
     Codec<ResourceLocation> LOCATION_CODEC = Codec.either(
             ResourceLocation.CODEC, CODEC
     ).xmap(
             either -> either.map(
                     location -> location,
-                    particle -> {
-                        ResourceLocation key = ResourceLocation.fromNamespaceAndPath(
-                                FingerprintUtil.hashString(ResourceLocation.CODEC, particle.getType()),
-                                VisionRealm.INLINE_DATA_ID + FingerprintUtil.hashString(CODEC, particle)
-                        );
-                        return ParticleConfigManager.getInstance().storage(key, particle);
-                    }
+                    particle -> ParticleConfigLoader.cachePersistent(particle, CODEC)
             ),
             Either::left
     );
-    MapCodec<ParticleConfig> MAP_CODEC = MapCodec.assumeMapUnsafe(CODEC);
 
     /**
      * Returns the underlying singleton particle configuration.
@@ -69,6 +59,7 @@ public interface ParticleConfig {
      *
      * @return The singleton particle configuration instance
      */
+    @NotNull
     SingletonParticleConfig getSingleton();
 
     /**
@@ -88,7 +79,7 @@ public interface ParticleConfig {
      * @return The list of particle configurations
      */
     @NotNull
-    List<ParticleConfig> getList();
+    List<ParticleConfig> unwrap();
 
     /**
      * Checks whether this configuration is in singleton mode.
@@ -97,10 +88,5 @@ public interface ParticleConfig {
      */
     default boolean isSingleton() {
         return false;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T extends ParticleConfig> T converted(ParticleConfig particleConfig) {
-        return (T) particleConfig;
     }
 }

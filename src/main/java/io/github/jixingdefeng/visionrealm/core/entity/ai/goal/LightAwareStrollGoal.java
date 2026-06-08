@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.core.entity.ai.goal;
 
-import io.github.jixingdefeng.visionrealm.common.util.world.BlockPosUtil;
+import io.github.jixingdefeng.visionrealm.common.util.world.pos.BlockPosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;

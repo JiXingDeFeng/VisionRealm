@@ -7,9 +7,7 @@ public class PlayerTickEvents {
 
     public static void updateAttribute(Player player) {
         if (!player.level().isClientSide) {
-            if (player instanceof PlayerSanityController updatable) {
-                updatable.updateSanity();
-            }
+            ((PlayerSanityController) player).updateSanity();
         }
     }
 }

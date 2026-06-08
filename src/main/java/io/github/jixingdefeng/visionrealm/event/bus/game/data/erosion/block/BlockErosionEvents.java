@@ -1,8 +1,8 @@
 package io.github.jixingdefeng.visionrealm.event.bus.game.data.erosion.block;
 
 import io.github.jixingdefeng.visionrealm.api.event.erosion.block.BlockErosionLoaderRegisterEvent;
-import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block.block.TransformIntoBlock;
-import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block.entity.TransformIntoEntity;
+import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block_entry.block.TransformIntoBlock;
+import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block_entry.entity.TransformIntoEntity;
 
 public class BlockErosionEvents {
 

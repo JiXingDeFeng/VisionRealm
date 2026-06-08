@@ -48,8 +48,8 @@ public class ScreenEffects {
             int screenWidth = minecraft.getWindow().getGuiScaledWidth();
             int screenHeight = minecraft.getWindow().getGuiScaledHeight();
 
-                ScreenEffects.renderScreenFilters(guiGraphics, screenWidth, screenHeight);
-                ScreenEffects.renderScreenParticles(guiGraphics, screenWidth, screenHeight);
+            ScreenEffects.renderScreenFilters(guiGraphics, screenWidth, screenHeight);
+            ScreenEffects.renderScreenParticles(guiGraphics, screenWidth, screenHeight);
         }
     }
 
@@ -74,10 +74,32 @@ public class ScreenEffects {
 
             guiGraphics.pose().pushPose();
             guiGraphics.setColor(1.0F, 1.0F, 1.0F, BACKGROUND_FILTER_ALPHA_BASE_VALUE * opacity);
-            guiGraphics.blit(BACKGROUND_FILTER, 0, 0, BACKGROUND_FILTER_BLIT_OFFSET, 0, 0, screenWidth, screenHeight, screenWidth, screenHeight);
+            guiGraphics.blit(
+                    BACKGROUND_FILTER,
+                    0,
+                    0,
+                    BACKGROUND_FILTER_BLIT_OFFSET,
+                    0,
+                    0,
+                    screenWidth,
+                    screenHeight,
+                    screenWidth,
+                    screenHeight
+            );
 
             guiGraphics.setColor(1.0F, 1.0F, 1.0F, NOISE_FILTERS_ALPHA_BASE_VALUE * opacity);
-            guiGraphics.blit(NOISE_FILTERS.get(random.nextInt(NOISE_FILTERS.size())), 0, 0, NOISE_FILTER_BLIT_OFFSET, 0, 0, screenWidth, screenHeight, screenWidth, screenHeight);
+            guiGraphics.blit(
+                    NOISE_FILTERS.get(random.nextInt(NOISE_FILTERS.size())),
+                    0,
+                    0,
+                    NOISE_FILTER_BLIT_OFFSET,
+                    0,
+                    0,
+                    screenWidth,
+                    screenHeight,
+                    screenWidth,
+                    screenHeight
+            );
         } finally {
             guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
             guiGraphics.pose().popPose();

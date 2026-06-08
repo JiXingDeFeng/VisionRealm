@@ -1,9 +1,0 @@
-{
-  "block": "minecraft:stripped_cherry_wood",
-  "keys": [
-    {
-      "type": "visionrealm:blood",
-      "target": "visionrealm:stripped_blood_corroded_cherry_wood"
-    }
-  ]
-}

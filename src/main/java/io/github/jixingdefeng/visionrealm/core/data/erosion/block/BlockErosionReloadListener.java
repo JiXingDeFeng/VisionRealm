@@ -5,142 +5,116 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import io.github.jixingdefeng.visionrealm.api.event.erosion.block.BlockErosionLoaderRegisterEvent;
-import io.github.jixingdefeng.visionrealm.common.manager.erosion.infection.block.BlockErosionKeyManager;
+import io.github.jixingdefeng.visionrealm.common.erosion.manager.infection.block.BlockErosionEntryManager;
+import io.github.jixingdefeng.visionrealm.common.util.file.PathUtil;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
-import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block.BaseBlockErosionKey;
+import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block_entry.BaseBlockErosionEntry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class BlockErosionReloadListener extends SimplePreparableReloadListener<Collection<Map<Block, BaseBlockErosionKey<Object, Object>>>> {
-    private final BlockErosionKeyManager manager;
+public class BlockErosionReloadListener extends SimplePreparableReloadListener<Collection<Map<Block, BaseBlockErosionEntry<Object, Object>>>> {
+    protected final BlockErosionEntryManager manager;
 
-    public BlockErosionReloadListener(BlockErosionKeyManager manager) {
+    public BlockErosionReloadListener(BlockErosionEntryManager manager) {
         this.manager = manager;
     }
 
-    @NotNull
-    @Override
-    protected Collection<Map<Block, BaseBlockErosionKey<Object, Object>>> prepare(@NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
-        BlockErosionLoaderRegisterEvent event = new BlockErosionLoaderRegisterEvent();
-        NeoForge.EVENT_BUS.post(event);
-
-        List<Map<Block, BaseBlockErosionKey<Object, Object>>> result = new ArrayList<>();
-        Map<String, BlockErosionLoaderRegisterEvent.PendingLoader> pendingLoaderMap = new LinkedHashMap<>();
-
-        for (var pendingLoader : event.getPendingLoaders()) {
-            String path = pendingLoader.path();
-            if (pendingLoaderMap.put(path, pendingLoader) != null) {
-                VisionRealm.LOGGER.warn("Duplicate loader path: {}", path, new RuntimeException());
-            }
-        }
-
-        for (var loader : pendingLoaderMap.values()) {
-            String path = loader.path();
-            try {
-                var codec = this.conversionCodec(loader.codec());
-                var loadedMap  = this.loadErosionKeys(resourceManager, path, codec);
-                result.add(loadedMap);
-            } catch (Exception e) {
-                VisionRealm.LOGGER.error("Failed to load erosion keys from path: {}", path, e);
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    protected void apply(@NotNull Collection<Map<Block, BaseBlockErosionKey<Object, Object>>> map, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
-        this.manager.initializeKeys(map);
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected <T, R> Codec<BaseBlockErosionKey<T, R>> conversionCodec(Codec<BaseBlockErosionKey<?, ?>> codec) {
+    protected static <T, R> Codec<BaseBlockErosionEntry<T, R>> conversionCodec(Codec<BaseBlockErosionEntry<?, ?>> codec) {
         // 转换为具体类型的 Codec（虽然是 unchecked，但安全）
         // Convert to concrete type Codec (unchecked but safe)
-        return (Codec<BaseBlockErosionKey<T, R>>) (Codec) codec;
+        return (Codec<BaseBlockErosionEntry<T, R>>) (Codec) codec;
     }
 
-    protected <T, R> Map<Block, BaseBlockErosionKey<T, R>> loadErosionKeys(@NotNull ResourceManager resourceManager, @NotNull String path, @NotNull Codec<BaseBlockErosionKey<T, R>> codec) {
-        Map<Block, Collection<BaseBlockErosionKey<T, R>>> map = new HashMap<>();
-        resourceManager.listResources(path, fileName -> fileName.getPath().endsWith(".json"))
+    protected static <T, R> Map<Block, BaseBlockErosionEntry<T, R>> loadErosionEntry(
+            @NotNull ResourceManager resourceManager,
+            @NotNull String path,
+            @NotNull Codec<BaseBlockErosionEntry<T, R>> codec
+    ) {
+        Map<Block, Collection<BaseBlockErosionEntry<T, R>>> map = new HashMap<>();
+        resourceManager.listResources(path, location -> location.getPath().endsWith(".json"))
                 .forEach((fileId, resource) -> {
                     try (var reader = resource.openAsReader()) {
-                        BaseBlockErosionKey<T, R> erosionKey = codec.decode(JsonOps.INSTANCE, JsonParser.parseReader(reader))
+                        BaseBlockErosionEntry<T, R> erosionEntry = codec.decode(JsonOps.INSTANCE, JsonParser.parseReader(reader))
                                 .getOrThrow(JsonParseException::new)
                                 .getFirst();
-                        Block source = erosionKey.getSource();
-                        if (nameQualified(BuiltInRegistries.BLOCK.getKey(source), fileId, path)) {
-                            map.computeIfAbsent(source, key -> new ArrayList<>()).add(erosionKey);
+                        Block source = erosionEntry.getSource();
+                        if (PathUtil.isValidResourcePath(BuiltInRegistries.BLOCK.getKey(source), fileId, path)) {
+                            map.computeIfAbsent(source, key -> new ArrayList<>()).add(erosionEntry);
                         }
                     } catch (Exception e) {
                         VisionRealm.LOGGER.error(e.getMessage(), e);
                     }
                 });
-        Map<Block, BaseBlockErosionKey<T, R>> newMap = new HashMap<>();
-        map.forEach((block, erosionKeys) ->
-                newMap.put(block, this.merger(erosionKeys))
+        Map<Block, BaseBlockErosionEntry<T, R>> newMap = new HashMap<>();
+        map.forEach((block, erosionEntryList) ->
+                newMap.put(block, BaseBlockErosionEntry.merger(erosionEntryList))
         );
-        VisionRealm.LOGGER.debug("Block erosion key for path '{}' loaded successfully", path);
+        VisionRealm.LOGGER.debug("Block erosion entry for path '{}' loaded complete", path);
         return newMap;
     }
 
+    @Nullable
+    protected static Map<Block, BaseBlockErosionEntry<Object, Object>> load(
+            @NotNull ResourceManager resourceManager,
+            @NotNull PendingLoader pendingLoader
+    ) {
+        String path = pendingLoader.path();
+        try {
+            var codec = conversionCodec(pendingLoader.codec());
+            return loadErosionEntry(resourceManager, path, codec);
+        } catch (Exception e) {
+            VisionRealm.LOGGER.error("Failed to load erosion entry from path: {}", path, e);
+        }
+
+        return null;
+    }
+
+    @NotNull
+    @Override
+    protected Collection<Map<Block, BaseBlockErosionEntry<Object, Object>>> prepare(
+            @NotNull ResourceManager resourceManager,
+            @NotNull ProfilerFiller profiler
+    ) {
+        BlockErosionLoaderRegisterEvent event = new BlockErosionLoaderRegisterEvent();
+        NeoForge.EVENT_BUS.post(event);
+        Queue<PendingLoader> queue = new ArrayDeque<>(event.getPendingLoaders());
+
+        List<Map<Block, BaseBlockErosionEntry<Object, Object>>> entryList = new ArrayList<>();
+        while (!queue.isEmpty()) {
+            PendingLoader pendingLoader = queue.poll();
+            if (pendingLoader != null) {
+                var loadedMap = load(resourceManager, pendingLoader);
+                entryList.add(loadedMap);
+            }
+        }
+
+        return entryList;
+    }
+
+    @Override
+    protected void apply(
+            @NotNull Collection<Map<Block, BaseBlockErosionEntry<Object, Object>>> collection,
+            @NotNull ResourceManager resourceManager,
+            @NotNull ProfilerFiller profiler
+    ) {
+        this.manager.start(collection);
+    }
+
     /**
-     * Validates whether the file path complies with the naming convention.
-     * <p>
-     * Requirements:
-     * - The file name (without .json) must equal the block's path
-     * - The file must be located in a subfolder named after the block's namespace,
-     *   optionally followed by additional subdirectories (e.g., .../minecraft/wood/stone.json)
-     *   where the first subfolder after the base path is the namespace, and any
-     *   subsequent subfolders are ignored for validation purposes.
+     * Represents a pending block erosion loader registration.
      *
-     * @param source The source block's ResourceLocation
-     * @param fileId The file's ResourceLocation
-     * @param path   The base path (e.g., "erosion/block/")
-     *
-     * @return true if the file path meets the naming convention
+     * @param path  The resource path for JSON files
+     * @param codec The codec for decoding {@link BaseBlockErosionEntry} instances
      */
-    protected boolean nameQualified(ResourceLocation source, ResourceLocation fileId, String path) {
-        String jsonPath = fileId.getPath();
-        String fileName = extractFileName(jsonPath);
-        String folderName = extractFolderName(jsonPath, path);
-        return source.getPath().equals(fileName) && source.getNamespace().equals(folderName);
-    }
-
-    private String extractFileName(String jsonPath) {
-        return jsonPath.substring(jsonPath.lastIndexOf('/') + 1).replace(".json", "");
-    }
-
-    private String extractFolderName(String jsonPath, String path) {
-        if (jsonPath.startsWith(path)) {
-            String pathWithoutFile = jsonPath.substring(path.length() + 1);
-            int index = pathWithoutFile.indexOf('/');
-            if (index != -1) {
-                return pathWithoutFile.substring(0, index);
-            }
-        }
-
-        return "";
-    }
-
-    protected <T, R> BaseBlockErosionKey<T, R> merger(Collection<BaseBlockErosionKey<T, R>> keys) {
-        BaseBlockErosionKey<T, R> presentKey = null;
-        for (BaseBlockErosionKey<T, R> key : keys) {
-            if (presentKey == null) {
-                presentKey = key;
-            } else {
-                presentKey = presentKey.merger(key);
-            }
-        }
-
-        return presentKey;
+    public record PendingLoader(String path, Codec<BaseBlockErosionEntry<?, ?>> codec) {
     }
 }

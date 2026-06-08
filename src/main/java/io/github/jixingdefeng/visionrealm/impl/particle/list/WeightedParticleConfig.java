@@ -1,20 +1,21 @@
 package io.github.jixingdefeng.visionrealm.impl.particle.list;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.jixingdefeng.visionrealm.api.particle.ParticleConfig;
 import io.github.jixingdefeng.visionrealm.api.particle.SingletonParticleConfig;
+import io.github.jixingdefeng.visionrealm.common.particle.ParticleConfigLoader;
+import io.github.jixingdefeng.visionrealm.common.util.particle.ParticleTemplates;
+import io.github.jixingdefeng.visionrealm.common.util.random.ArrayWeightRandomList;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.Weight;
-import net.minecraft.util.random.WeightedEntry;
-import net.minecraft.util.random.WeightedRandomList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Weighted particle configuration for random selection.
@@ -27,10 +28,10 @@ import java.util.List;
  * <pre>
  * {
  *   "type": "visionrealm:weighted",
- *   "particles": [
+ *   "values": [
  *      {
- *       "particle": {...},
- *       "weight": 3
+ *        "type": "..."
+ *        "weight": 3,
  *      }
  *   ]
  * }
@@ -39,73 +40,53 @@ import java.util.List;
  * @author JiXingDeFeng
  * @see ParticleConfig
  * @see SingletonParticleConfig
- * @see WeightedConfig
- * @since 0.0.1-dev-1
+ * @since 0.0.1-dev
  */
 public class WeightedParticleConfig implements ParticleConfig {
     public static final MapCodec<WeightedParticleConfig> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
-                    Codec.list(WeightedConfig.CODEC).fieldOf("particles").forGetter(WeightedParticleConfig::getConfigList)
+                    ArrayWeightRandomList.codec(ParticleConfig.LOCATION_CODEC.fieldOf("config"))
+                            .forGetter(WeightedParticleConfig::getConfigList)
             ).apply(instance, WeightedParticleConfig::new)
     );
     public static final ResourceLocation type = ResourceLocation.fromNamespaceAndPath(VisionRealm.MOD_ID, "weighted");
-    protected final WeightedRandomList<WeightedConfig> particleConfigs;
+    protected final ArrayWeightRandomList<ResourceLocation> randomList;
     protected final RandomSource random;
 
-    public static WeightedParticleConfig create(List<ParticleConfig> particleConfigs) {
-        List<WeightedConfig> weightedConfigs = new ArrayList<>(particleConfigs.size());
-        for (ParticleConfig particleConfig : particleConfigs) {
-            weightedConfigs.add(WeightedConfig.create(particleConfig));
-        }
-
-        return new WeightedParticleConfig(weightedConfigs);
+    public static WeightedParticleConfig create(
+            @Nullable RandomSource random,
+            List<ResourceLocation> particleConfigs,
+            Function<ResourceLocation, Integer> weight
+    ) {
+        ArrayWeightRandomList<ResourceLocation> randomList = new ArrayWeightRandomList<>(particleConfigs, weight);
+        return new WeightedParticleConfig(random != null ? random : RandomSource.create(), randomList);
     }
 
-    public WeightedParticleConfig(List<WeightedConfig> particleConfigs) {
-        this(RandomSource.create(), particleConfigs);
+    public WeightedParticleConfig(ArrayWeightRandomList<ResourceLocation> randomList) {
+        this(RandomSource.create(), randomList);
     }
 
-    public WeightedParticleConfig(RandomSource random, List<WeightedConfig> particleConfigs) {
-        this.particleConfigs = WeightedRandomList.create(particleConfigs);
+    public WeightedParticleConfig(RandomSource random, ArrayWeightRandomList<ResourceLocation> randomList) {
+        this.randomList = randomList;
         this.random = random;
     }
 
-    /**
-     * A single entry in a weighted particle configuration list.
-     * <p>
-     * This record pairs a particle configuration with its weight for random selection.
-     *
-     * @param particleConfig The particle configuration
-     * @param weight         The weight for random selection
-     * @author JiXingDeFeng
-     * @see WeightedParticleConfig
-     * @since 0.0.1-dev-1
-     */
-    public record WeightedConfig(@NotNull ParticleConfig particleConfig, @NotNull Weight weight) implements WeightedEntry {
-        public static final Codec<WeightedConfig> CODEC = RecordCodecBuilder.create(instance ->
-                instance.group(
-                        ParticleConfig.MAP_CODEC.forGetter(WeightedConfig::particleConfig),
-                        Weight.CODEC.optionalFieldOf("weight", Weight.of(1)).forGetter(WeightedConfig::getWeight)
-                ).apply(instance, WeightedConfig::new)
-        );
-
-        public static WeightedConfig create(ParticleConfig particleConfig) {
-            return new WeightedConfig(particleConfig, Weight.of(1));
-        }
-
-        @NotNull
-        @Override
-        public Weight getWeight() {
-            return this.weight;
-        }
+    @NotNull
+    public List<ResourceLocation> unwrapLocation() {
+        return this.randomList.unwrapValue();
     }
 
+    public ArrayWeightRandomList<ResourceLocation> getConfigList() {
+        return this.randomList;
+    }
+
+    @NotNull
     @Override
     public SingletonParticleConfig getSingleton() {
-        return this.particleConfigs.getRandom(this.random)
-                .map(WeightedConfig::particleConfig)
+        return this.randomList.getRandom(this.random)
+                .map(ParticleConfigLoader::load)
                 .map(ParticleConfig::getSingleton)
-                .orElse(null);
+                .orElse(ParticleTemplates.empty().getSingleton());
     }
 
     @NotNull
@@ -116,13 +97,10 @@ public class WeightedParticleConfig implements ParticleConfig {
 
     @NotNull
     @Override
-    public List<ParticleConfig> getList() {
-        return this.getConfigList().stream()
-                .map(WeightedConfig::particleConfig)
+    public List<ParticleConfig> unwrap() {
+        return this.randomList.unwrapValue().stream()
+                .map(ParticleConfigLoader::load)
+                .filter(Objects::nonNull)
                 .toList();
-    }
-
-    public List<WeightedConfig> getConfigList() {
-        return this.particleConfigs.unwrap();
     }
 }

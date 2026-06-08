@@ -1,0 +1,9 @@
+{
+  "block": "minecraft:cherry_button",
+  "entry": [
+    {
+      "type": "visionrealm:blood",
+      "target": "visionrealm:blood_corroded_cherry_button"
+    }
+  ]
+}

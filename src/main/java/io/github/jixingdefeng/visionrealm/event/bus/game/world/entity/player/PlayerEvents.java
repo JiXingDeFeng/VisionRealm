@@ -9,11 +9,8 @@ public class PlayerEvents {
     public static void initAttributes(Player player, boolean endConquered) {
         if (!endConquered) {
             AttributeInstance sane = player.getAttributes().getInstance(ModAttributes.SANITY);
-            AttributeInstance erosion = player.getAttributes().getInstance(ModAttributes.EROSION);
-
-            if (sane != null && erosion != null) {
+            if (sane != null) {
                 sane.setBaseValue(100);
-                erosion.setBaseValue(0);
             }
         }
     }

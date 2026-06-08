@@ -15,7 +15,6 @@ public class PlayerAttributeMixin {
     private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.setReturnValue(cir.getReturnValue()
                 .add(ModAttributes.SANITY)
-                .add(ModAttributes.EROSION)
         );
     }
 }
