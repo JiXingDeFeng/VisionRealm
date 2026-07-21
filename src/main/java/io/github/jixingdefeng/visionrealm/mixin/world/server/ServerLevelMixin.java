@@ -1,7 +1,7 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.server;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.jixingdefeng.visionrealm.api.erosion.infection.block.CanBeErosionBlock;
+import io.github.jixingdefeng.visionrealm.api.erosion.block.CanBeErosionBlock;
 import io.github.jixingdefeng.visionrealm.common.util.erosion.ErosionUtil;
 import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
 import net.minecraft.core.BlockPos;
@@ -32,8 +32,8 @@ public class ServerLevelMixin {
             LevelChunk chunk,
             int randomTickSpeed,
             CallbackInfo ci,
-            @Local BlockState blockstate,
-            @Local BlockPos blockpos1
+            @Local(name = "blockstate") BlockState blockstate,
+            @Local(name = "blockpos1") BlockPos blockpos1
     ) {
         Level level = chunk.getLevel();
         if (level instanceof ServerLevel serverLevel) {

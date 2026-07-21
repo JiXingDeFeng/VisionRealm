@@ -1,0 +1,12 @@
+{
+  "block": "minecraft:pink_petals",
+  "entry": {
+    "visionrealm:blood": {
+      "values": [
+        {
+          "target": "visionrealm:blood_corroded_cherry_petals"
+        }
+      ]
+    }
+  }
+}

@@ -2,8 +2,9 @@ package io.github.jixingdefeng.visionrealm.api.particle;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import io.github.jixingdefeng.visionrealm.common.particle.ParticleConfigLoader;
 import io.github.jixingdefeng.visionrealm.common.util.particle.ParticleTemplates;
+import io.github.jixingdefeng.visionrealm.core.particle.config.ParticleConfigStore;
+import io.github.jixingdefeng.visionrealm.impl.particle.EmptyParticleConfig;
 import io.github.jixingdefeng.visionrealm.impl.particle.list.WeightedParticleConfig;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -11,53 +12,96 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Container interface that provides access to a particle configuration.
+ * Container interface for a particle configuration that supports both
+ * single and weighted variants.
  * <p>
- * The {@code type} field in JSON determines which implementation to use:
+ * The {@code "type"} field in JSON, which
+ * holds a {@link ResourceLocation} (e.g. {@code "visionrealm:default"} or
+ * {@code "visionrealm:weighted"}), determines the concrete implementation
+ * via codec dispatch.
+ *
+ * <p><b>The {@code type} field in JSON determines which implementation to use:</b></p>
  * <ul>
- *   <li><b>singleton</b> - Stores exactly one particle configuration. This is a
- *       simple wrapper that directly contains the particle data.</li>
- *   <li><b>multiple</b> - Stores a collection of particle configurations.
- *       When triggered, it selects one configuration from the collection according
- *       to its own selection logic. The system provides a weighted random
- *       implementation as one of the available options.</li>
+ *   <li><b>{@code visionrealm:default}</b> – a single particle configuration.</li>
+ *   <li><b>{@code visionrealm:weighted}</b> – a weighted collection of particle
+ *       configurations; one is selected at random when triggered.</li>
  * </ul>
  *
- * <p><b>JSON Example:</b>
- * <pre>
- * {
- *   "type": "visionrealm:default"   // The actual fields depend on this value
- * }
- * </pre>
+ * <p><b>External vs Inline References:</b></p>
+ * <ul>
+ *   <li><b>External reference:</b> A resource location string (e.g., {@code "visionrealm:blood_particles"})
+ *       pointing to a separate particle config JSON file in data packs.</li>
+ *   <li><b>Inline definition:</b> A full particle configuration object embedded directly
+ *       in the JSON (e.g., {@code {"type":"visionrealm:default","particle":{...},"count":5}}).</li>
+ * </ul>
+ * Both forms are handled by {@link #LOCATION_CODEC}, which automatically resolves and
+ * stores inline definitions for later use.
+ *
+ * <p><b>JSON Examples:</b></p>
+ * <ul>
+ *   <li><b>Singleton particle config (visionrealm:default)</b>
+ *     <pre>{@code {
+ *   "type": "visionrealm:default",
+ *   "particle": {
+ *     "type": "minecraft:heart"
+ *   },
+ *   "count": 5
+ * }}</pre>
+ *   </li>
+ *   <li><b>Weighted particle config (visionrealm:weighted)</b>
+ *     <pre>{@code {
+ *   "type": "visionrealm:weighted",
+ *   "values": [
+ *     {
+ *       "config": "visionrealm:blood_particles",   // external reference
+ *       "weight": 2
+ *     },
+ *     {
+ *       "config": {                                // inline definition
+ *         "type": "visionrealm:default",
+ *         "particle": {
+ *           "type": "minecraft:smoke"
+ *         }
+ *       },
+ *       "weight": 1
+ *     }
+ *   ]
+ * }}</pre>
+ *   </li>
+ * </ul>
  *
  * @author JiXingDeFeng
- * @see SingletonParticleConfig Singleton particle configuration (single instance, no selection logic)
- * @see WeightedParticleConfig Weighted particle configuration list (multiple instances with weights, random selection)
- * @see ParticleTemplates Particle configuration template (predefined particle configuration templates)
- * @since 0.0.1-dev
+ * @see SingletonParticleConfig
+ * @see WeightedParticleConfig
+ * @see ParticleTemplates
+ * @since 0.0.3-dev
  */
 public interface ParticleConfig {
     Codec<ParticleConfig> CODEC = ResourceLocation.CODEC.dispatch(
             ParticleConfig::getType,
-            ParticleConfigLoader::getCodec
+            ParticleConfigStore::getCodec
     );
     Codec<ResourceLocation> LOCATION_CODEC = Codec.either(
             ResourceLocation.CODEC, CODEC
     ).xmap(
             either -> either.map(
                     location -> location,
-                    particle -> ParticleConfigLoader.cachePersistent(particle, CODEC)
+                    particle -> ParticleConfigStore.getInstance()
+                            .orElseThrow(() -> new NullPointerException("ParticleConfigStore it is null"))
+                            .storePersistent(particle)
             ),
             Either::left
     );
 
     /**
-     * Returns the underlying singleton particle configuration.
-     * <p>
-     * For singleton mode, returns itself. For multiple mode, returns the
-     * configuration selected from the collection.
+     * Returns the effective {@link SingletonParticleConfig} to be rendered.
+     * <ul>
+     *   <li>For a singleton config, returns itself.</li>
+     *   <li>For a weighted config, returns one entry chosen at random
+     *       according to the configured weights.</li>
+     * </ul>
      *
-     * @return The singleton particle configuration instance
+     * @return a non‑null singleton particle configuration
      */
     @NotNull
     SingletonParticleConfig getSingleton();
@@ -88,5 +132,17 @@ public interface ParticleConfig {
      */
     default boolean isSingleton() {
         return false;
+    }
+
+    /**
+     * Checks whether this configuration is empty.
+     * <p>
+     * Returns {@code true} if it is an {@link EmptyParticleConfig} or if its
+     * {@link #unwrap() unwrapped} list is empty.
+     *
+     * @return {@code true} if no particles are configured
+     */
+    default boolean isEmpty() {
+        return this instanceof EmptyParticleConfig || this.unwrap().isEmpty();
     }
 }

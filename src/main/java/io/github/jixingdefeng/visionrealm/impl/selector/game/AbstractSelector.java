@@ -3,6 +3,7 @@ package io.github.jixingdefeng.visionrealm.impl.selector.game;
 import com.google.common.collect.Range;
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetCustomizer;
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
+import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
@@ -19,6 +20,10 @@ import java.util.function.Predicate;
 
 /**
  * Abstract base class for all target selectors.
+ * <p>
+ * Manages shared configuration (biomes, ranges, predicates) and provides
+ * a snapshot/queue mechanism for deferred execution. Actual target
+ * retrieval is deferred to subclasses via {@link #execute()}.
  *
  * <p>Provides configuration storage, state management, and copy functionality.
  * This class handles common selector operations including:</p>
@@ -33,6 +38,11 @@ import java.util.function.Predicate;
  * <p><strong>Note:</strong> This class does not implement the actual query execution logic.
  * Subclasses must override {@link #execute()} to provide concrete selection behavior.</p>
  *
+ * <p><b>Thread Safety:</b> Instances of this class are <em>not</em> thread-safe.
+ * They are designed to be used from a single thread (typically the server thread).
+ * If concurrent access is required, create a fresh instance via {@link #copy(Level)}
+ * for each thread, or implement external synchronization.
+ *
  * @param <T> The target type returned by the selector (e.g., Vec3, Entity, BlockState)
  * @param <S> The self-referential type for fluent chaining
  * @author JiXingDeFeng
@@ -46,17 +56,17 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
     protected @Nullable AABB boxRange;
     protected @Nullable SphereRange sphereRange;
 
-    protected @NotNull Collection<T> cachedResults = new ArrayList<>();
+    protected Collection<T> cachedResults;
     protected @NotNull Collection<ResourceKey<? extends Biome>> allowBiomes = List.of();
     protected @NotNull Collection<ResourceKey<? extends Biome>> denyBiomes = List.of();
 
     protected @NotNull Range<Double> heightRange = Range.all();
-    protected @NotNull Deque<Predicate<? super T>> filters = new ArrayDeque<>();
-    protected @NotNull Deque<Snapshot<T>> snapshotDeque = new ArrayDeque<>();
+    protected @NotNull List<Predicate<? super T>> filters = new ArrayList<>();
+    protected @NotNull Queue<Snapshot<T>> snapshot = new ArrayDeque<>();
 
-    protected int limit = 0;
+    protected int limit = -1;
     protected boolean loadedOnly = false;
-    protected boolean executed = false;
+    private boolean executed = false;
 
     public AbstractSelector(Level level) {
         this.level = level;
@@ -87,7 +97,7 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
     }
 
     @Override
-    public S where(Predicate<? super T> filter) {
+    public S filter(Predicate<? super T> filter) {
         this.filters.add(filter);
         return this.self();
     }
@@ -118,15 +128,19 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
 
     @Override
     public S inBox(Vec3 min, Vec3 max) {
-        if (this.referenceCenter != null) {
-            this.boxRange = new AABB(
-                    min.add(this.referenceCenter),
-                    max.add(this.referenceCenter)
-            );
-        } else {
-            this.boxRange = new AABB(min, max);
-        }
+        this.boxRange = new AABB(min, max);
+        return this.self();
+    }
 
+    @Override
+    public S inBox(AABB box) {
+        this.boxRange = box;
+        return this.self();
+    }
+
+    @Override
+    public S inBox(double maxX, double maxY, double maxZ, double minX, double minY, double minZ) {
+        this.boxRange = new AABB(maxX, maxY, maxZ, minX, minY, minZ);
         return this.self();
     }
 
@@ -159,12 +173,22 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
     }
 
     /**
+     * Marks this selector as having been executed.
+     * <p>
+     * After this call, further attempts to copy configuration from this
+     * selector will be rejected (see {@link #copyFrom}).
+     */
+    protected void markExecuted() {
+        this.executed = true;
+    }
+
+    /**
      * Copies all compatible configuration from another selector into this instance.
      * <p>This method is used internally during selector conversion. Subclasses should
      * override this method to copy their own fields, and must call {@code super.copyFrom(source)}.</p>
      *
      * <p><strong>Note:</strong> Only configuration data that is compatible between
-     * selectors is copied. Predicates ({@link #where(Predicate)}) are typically not
+     * selectors is copied. Predicates ({@link #filter(Predicate)}) are typically not
      * copied as they may be type-incompatible.</p>
      *
      * @param source The source selector to copy configuration from
@@ -188,32 +212,62 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
         this.boxRange = source.boxRange;
         this.sphereRange = source.sphereRange;
     }
-    
+
+    /**
+     * Returns the default {@link TargetCustomizer} used when no explicit
+     * strategy is provided.
+     */
     protected TargetCustomizer<T, Level, RandomSource> defaultTargetCustomizer() {
-        return (value, level, random) -> true;
+        return (value, level) -> -1;
     }
 
+    /**
+     * Registers a new extraction request, freezing the current selector
+     * state into a {@link Snapshot} and queuing it for later execution.
+     */
     protected void push(TargetProvider<T> actuator) {
         Snapshot<T> snapshot = new Snapshot<>(this, actuator);
-        this.snapshotDeque.add(snapshot);
+        this.snapshot.add(snapshot);
     }
 
-    protected Snapshot<T> pop() {
-        return this.snapshotDeque.poll();
+    /**
+     * Retrieves and removes the oldest pending {@link Snapshot} from the queue.
+     *
+     * @return the next snapshot to execute, or {@code null} if the queue is empty
+     */
+    protected Snapshot<T> poll() {
+        return this.snapshot.poll();
     }
 
+    /**
+     * Defines a spherical search region with a center and radius.
+     * <p>
+     * The center can be absolute or relative to a reference point (see {@link #offset(Vec3)}).
+     *
+     * @since 0.0.2-dev
+     */
     protected record SphereRange(@NotNull Vec3 center, double radius) {
 
+        /**
+         * Creates a sphere range centered on a block position.
+         *
+         * @param center the block position to use as center
+         * @param radius the radius of the sphere
+         */
         public static SphereRange of(@NotNull BlockPos center, double radius) {
             Vec3 vec3 = center.getCenter();
             return new SphereRange(vec3, radius);
         }
 
-        public Vec3 getCenter(@Nullable Vec3 referenceCenter) {
+        /**
+         * Returns a copy of this range with the center offset by the given reference,
+         * or this instance if referenceCenter is {@code null}.
+         */
+        public SphereRange offset(@Nullable Vec3 referenceCenter) {
             if (referenceCenter == null) {
-                return this.center;
+                return this;
             } else {
-                return this.center.add(referenceCenter);
+                return new SphereRange(this.center.add(referenceCenter), this.radius);
             }
         }
 
@@ -222,6 +276,17 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
         }
     }
 
+    /**
+     * Immutable snapshot of a selector's configuration and a {@link TargetProvider}
+     * at the moment an extraction is requested.
+     * <p>
+     * Freezes all parameters needed to perform one batch of target selection
+     * independently of the original selector's mutable state. Instances are
+     * queued and consumed by the execution pipeline.
+     *
+     * @param <T> the type of targets this snapshot will produce
+     * @since 0.0.2-dev
+     */
     protected static class Snapshot<T> {
         public final @Nullable Vec3 referenceCenter;
         public final @Nullable RandomSource random;
@@ -229,11 +294,10 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
         public final @Nullable AABB boxRange;
         public final TargetProvider<T> provider;
         public final Range<Double> heightRange;
-        public final int limit;
         public final boolean loadedOnly;
         public final Collection<ResourceKey<? extends Biome>> allowBiomes;
         public final Collection<ResourceKey<? extends Biome>> denyBiomes;
-        public final Deque<Predicate<? super T>> filters;
+        public final List<Predicate<? super T>> filters;
 
         public Snapshot(
                 @Nullable Vec3 referenceCenter,
@@ -241,11 +305,10 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
                 @Nullable AABB boxRange,
                 @Nullable SphereRange sphereRange,
                 Range<Double> heightRange,
-                int limit,
                 boolean loadedOnly,
                 Collection<ResourceKey<? extends Biome>> allowBiomes,
                 Collection<ResourceKey<? extends Biome>> denyBiomes,
-                Queue<Predicate<? super T>> filters,
+                List<Predicate<? super T>> filters,
                 TargetProvider<T> provider
         ) {
             this.referenceCenter = referenceCenter;
@@ -253,11 +316,10 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
             this.heightRange = heightRange;
             this.boxRange = boxRange;
             this.sphereRange = sphereRange;
-            this.limit = limit;
             this.loadedOnly = loadedOnly;
             this.allowBiomes = allowBiomes;
             this.denyBiomes = denyBiomes;
-            this.filters = new ArrayDeque<>(filters);
+            this.filters = new ArrayList<>(filters);
             this.provider = provider;
         }
 
@@ -271,16 +333,26 @@ public abstract class AbstractSelector<T, S extends TargetSelector<T, S>> implem
                     selector.boxRange,
                     selector.sphereRange,
                     selector.heightRange,
-                    selector.limit,
                     selector.loadedOnly,
                     selector.allowBiomes,
                     selector.denyBiomes,
                     selector.filters,
                     provider
             );
+            VisionRealm.LOGGER.warn("\n\nS");
         }
     }
 
+    /**
+     * Bundles an extraction strategy with optional random source and a flag
+     * indicating whether only a single result is desired.
+     * <p>
+     * Stored inside a {@link Snapshot} and evaluated by the selector's execution
+     * logic.
+     *
+     * @param <T> the target type
+     * @since 0.0.2-dev
+     */
     protected record TargetProvider<T>(
             @NotNull TargetCustomizer<T, Level, RandomSource> customizer,
             @Nullable RandomSource random,

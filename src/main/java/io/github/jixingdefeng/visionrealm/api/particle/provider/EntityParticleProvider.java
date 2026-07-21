@@ -1,7 +1,9 @@
 package io.github.jixingdefeng.visionrealm.api.particle.provider;
 
+import io.github.jixingdefeng.visionrealm.api.particle.ParticleConfig;
 import io.github.jixingdefeng.visionrealm.api.particle.SingletonParticleConfig;
 import io.github.jixingdefeng.visionrealm.impl.particle.singleton.ModifiableParticleConfig;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -31,13 +33,26 @@ import org.jetbrains.annotations.Nullable;
  * }</pre>
  *
  * @author JiXingDeFeng
- * @see net.minecraft.client.renderer.entity.EntityRenderer#render
+ * @see EntityRenderer#render
  * @see LivingEntity#aiStep()
  * @see LivingEntity#hurt(DamageSource, float)
  * @see LivingEntity#die(DamageSource)
  * @since 0.0.1-dev
  */
 public interface EntityParticleProvider {
+
+    /**
+     * Returns whether this entity should use the particle system powered by {@code ParticleConfig}.
+     * <p>
+     * When {@code true}, the entity uses the mod's particle system (based on {@link ParticleConfig})
+     * for particle effects instead of vanilla behavior. When {@code false}, falls back to
+     * Minecraft's default particle logic.
+     *
+     * @return {@code true} to use the mod's particle system, {@code false} to use vanilla particles
+     */
+    default boolean useParticleSystem() {
+        return false;
+    }
 
     /**
      * Determines whether spawn particles should be created for this entity.
@@ -121,23 +136,23 @@ public interface EntityParticleProvider {
      * Gets the particle effect to play at regular intervals during entity updates.
      * <p>
      * This configuration is automatically used by {@link #makeTickParticles(Entity)}
-     * every {@link #getParticleUpdateInterval()} ticks while the entity is alive.
+     * every {@link #getTickParticleInterval()} ticks while the entity is alive.
      * Useful for ambient effects like breath, aura, or trail particles.
      * </p>
      * <p>
      * <b>Performance Consideration:</b> Tickable particles are spawned frequently
-     * (controlled by {@link #getParticleUpdateInterval()}). Use simple particle
+     * (controlled by {@link #getTickParticleInterval()}). Use simple particle
      * configurations to maintain good performance.
      * </p>
      * <p>
      * <b>Usage:</b> Return {@code null} (default) to disable automatic tick particles.
-     * To enable, override both this method and {@link #getParticleUpdateInterval()}.
+     * To enable, override both this method and {@link #getTickParticleInterval()}.
      * </p>
      *
      * @return particle configuration for tick-based effects, or {@code null} to disable
      *
      * @see #makeTickParticles(Entity)
-     * @see #getParticleUpdateInterval()
+     * @see #getTickParticleInterval()
      * @see LivingEntity#aiStep()
      */
     @Nullable
@@ -161,7 +176,7 @@ public interface EntityParticleProvider {
      * @see #getTickParticles()
      * @see #makeTickParticles(Entity)
      */
-    default int getParticleUpdateInterval() {
+    default int getTickParticleInterval() {
         return 10;
     }
 
@@ -283,7 +298,7 @@ public interface EntityParticleProvider {
      *   <li>Called every tick from {@link Entity#tick()} via Mixin</li>
      *   <li>Maintains an internal tick counter for particle intervals</li>
      *   <li>Calls {@link #makeTickParticles(Entity)} when interval threshold is reached</li>
-     *   <li>Resets counter based on {@link #getParticleUpdateInterval()}</li>
+     *   <li>Resets counter based on {@link #getTickParticleInterval()}</li>
      *   <li>Does nothing if {@link #getTickParticles()} returns {@code null}</li>
      * </ul>
      *
@@ -297,7 +312,7 @@ public interface EntityParticleProvider {
      * @param entity the entity being updated (typically {@code this})
      *
      * @see #makeTickParticles(Entity)
-     * @see #getParticleUpdateInterval()
+     * @see #getTickParticleInterval()
      * @see #getTickParticles()
      * @see Entity#tick()
      */

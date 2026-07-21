@@ -1,30 +1,23 @@
 package io.github.jixingdefeng.visionrealm.common.util.world.pos;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LightLayer;
 
-public class BlockPosUtil {
+public final class BlockPosUtil {
 
-    public static int getLightLevel(Level level, BlockPos pos) {
-        return getLightLevel(level, pos, true);
-    }
-
-    public static int getLightLevel(Level level, BlockPos pos, boolean shouldSeeSky) {
-        return getLightLevel(level, pos, shouldSeeSky, true);
-    }
-
-    public static int getLightLevel(Level level, BlockPos pos, boolean considerSky, boolean considerBlock) {
-        int blockBrightness = level.getBrightness(LightLayer.BLOCK, pos);
-        int skyBrightness = level.getBrightness(LightLayer.SKY, pos);
-        if (considerSky && considerBlock) {
-            return Math.max(blockBrightness, skyBrightness);
+    public static int getLightLevel(LevelAccessor level, BlockPos pos, boolean considerSky, boolean considerBlock) {
+        if (considerBlock && considerSky) {
+            return level.getRawBrightness(pos, level.getSkyDarken());
         } else if (considerSky) {
-            return skyBrightness;
+            return level.getBrightness(LightLayer.SKY, pos);
         } else if (considerBlock) {
-            return blockBrightness;
+            return level.getBrightness(LightLayer.BLOCK, pos);
         } else {
             return 0;
         }
+    }
+
+    private BlockPosUtil() {
     }
 }

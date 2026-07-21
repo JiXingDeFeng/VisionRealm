@@ -6,6 +6,7 @@ import io.github.jixingdefeng.visionrealm.common.incident.context.BaseIncidentCo
 import io.github.jixingdefeng.visionrealm.impl.incident.SimpleRegisteredIncident;
 import io.github.jixingdefeng.visionrealm.impl.incident.SimpleRegisteredTargetSelector;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.Weight;
@@ -91,6 +92,34 @@ public interface RegisteredIncident<T, S extends TargetSelector<T, S>> extends W
     }
 
     /**
+     * Executes the incident across all applicable dimensions.
+     * <p>
+     * This method resolves the list of server levels from {@link RegisteredTargetSelector#getLevels(MinecraftServer)},
+     * then invokes {@link #execute(ServerLevel, RandomSource)} on each level.
+     * The return value is {@code true} if at least one level's execution succeeds.
+     * </p>
+     * <p>
+     * Note that all levels are processed regardless of intermediate results,
+     * because the selector may have side effects (e.g., targeting entities in each dimension).
+     * </p>
+     *
+     * @param server The Minecraft server instance
+     * @param random The random source for probability checks and target selection
+     * @return {@code true} if the incident executed successfully on any applicable level
+     */
+    default boolean execute(MinecraftServer server, RandomSource random) {
+        RegisteredTargetSelector<T, S> targetSelector = this.getTargetSelector();
+        List<ServerLevel> levels = targetSelector.getLevels(server);
+        boolean result = true;
+        for (ServerLevel level : levels) {
+            result &= this.execute(level, random);
+        }
+
+        return result;
+    }
+
+
+    /**
      * Creates an incident context for the given targets.
      * <p>
      * This method can be overridden by subclasses to provide custom context implementations
@@ -124,7 +153,7 @@ public interface RegisteredIncident<T, S extends TargetSelector<T, S>> extends W
      */
     class Builder<T, S extends TargetSelector<T, S>> {
         private final Incident<T> incident;
-        private final BiFunction<Level, RandomSource, S> targetSelector;
+        private final BiFunction<ServerLevel, RandomSource, S> targetSelector;
         private final List<ResourceKey<Level>> dimensions;
         private Function<S, Collection<T>> extractor;
         private Function<S, T> singleExtractor;
@@ -140,12 +169,19 @@ public interface RegisteredIncident<T, S extends TargetSelector<T, S>> extends W
          */
         public Builder(
                 @NotNull Incident<T> incident,
-                @NotNull BiFunction<Level, RandomSource, S> targetSelector,
+                @NotNull BiFunction<ServerLevel, RandomSource, S> targetSelector,
                 Collection<ResourceKey<Level>> dimensions
         ) {
             this.incident = incident;
             this.targetSelector = targetSelector;
             this.dimensions = new ArrayList<>(dimensions);
+        }
+
+        public Builder(
+                @NotNull Incident<T> incident,
+                @NotNull BiFunction<ServerLevel, RandomSource, S> targetSelector
+        ) {
+            this(incident, targetSelector, List.of());
         }
 
         /**
@@ -285,6 +321,14 @@ public interface RegisteredIncident<T, S extends TargetSelector<T, S>> extends W
             }
         }
 
+        /**
+         * Builds a {@link RegisteredTargetSelector} from the current builder state.
+         * <p>
+         * The returned selector uses the target selector factory, extraction functions,
+         * and dimension restrictions configured in this builder.
+         *
+         * @return a new {@code RegisteredTargetSelector} instance
+         */
         public RegisteredTargetSelector<T, S> buildTargetSelector() {
             return new SimpleRegisteredTargetSelector<>(this.extractor(), this.singleExtractor(), this.targetSelector(), this.dimensions());
         }
@@ -293,7 +337,7 @@ public interface RegisteredIncident<T, S extends TargetSelector<T, S>> extends W
             return this.incident;
         }
 
-        public BiFunction<Level, RandomSource, S> targetSelector() {
+        public BiFunction<ServerLevel, RandomSource, S> targetSelector() {
             return this.targetSelector;
         }
 

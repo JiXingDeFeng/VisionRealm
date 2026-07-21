@@ -1,14 +1,14 @@
 {
-  "the_forgotten_hurt": {
-    "subtitle": "sounds.visionrealm.entity.the_forgotten.hurt",
+  "forgotten_shadow_hurt": {
+    "subtitle": "sounds.visionrealm.entity.forgotten_shadow.hurt",
     "sounds": [
-      "visionrealm:the_forgotten_hurt"
+      "visionrealm:forgotten_shadow_hurt"
     ]
   },
-  "the_forgotten_death": {
-    "subtitle": "sounds.visionrealm.entity.the_forgotten.death",
+  "forgotten_shadow_death": {
+    "subtitle": "sounds.visionrealm.entity.forgotten_shadow.death",
     "sounds": [
-      "visionrealm:the_forgotten_death"
+      "visionrealm:forgotten_shadow_death"
     ]
   },
   "observation_admin_renamed": {

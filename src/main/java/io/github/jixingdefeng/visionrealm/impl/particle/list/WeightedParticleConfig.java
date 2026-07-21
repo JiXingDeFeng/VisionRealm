@@ -4,17 +4,17 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.jixingdefeng.visionrealm.api.particle.ParticleConfig;
 import io.github.jixingdefeng.visionrealm.api.particle.SingletonParticleConfig;
-import io.github.jixingdefeng.visionrealm.common.particle.ParticleConfigLoader;
 import io.github.jixingdefeng.visionrealm.common.util.particle.ParticleTemplates;
 import io.github.jixingdefeng.visionrealm.common.util.random.ArrayWeightRandomList;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
+import io.github.jixingdefeng.visionrealm.core.particle.config.ParticleConfigStore;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -84,7 +84,8 @@ public class WeightedParticleConfig implements ParticleConfig {
     @Override
     public SingletonParticleConfig getSingleton() {
         return this.randomList.getRandom(this.random)
-                .map(ParticleConfigLoader::load)
+                .flatMap(location -> ParticleConfigStore.getInstance()
+                        .flatMap(manager -> Optional.ofNullable(manager.get(location))))
                 .map(ParticleConfig::getSingleton)
                 .orElse(ParticleTemplates.empty().getSingleton());
     }
@@ -99,8 +100,9 @@ public class WeightedParticleConfig implements ParticleConfig {
     @Override
     public List<ParticleConfig> unwrap() {
         return this.randomList.unwrapValue().stream()
-                .map(ParticleConfigLoader::load)
-                .filter(Objects::nonNull)
+                .map(location -> ParticleConfigStore.getInstance()
+                        .flatMap(manager -> Optional.ofNullable(manager.get(location))))
+                .flatMap(Optional::stream)
                 .toList();
     }
 }

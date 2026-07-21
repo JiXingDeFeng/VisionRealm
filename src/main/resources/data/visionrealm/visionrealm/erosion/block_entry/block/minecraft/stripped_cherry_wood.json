@@ -1,0 +1,12 @@
+{
+  "block": "minecraft:stripped_cherry_wood",
+  "entry": {
+    "visionrealm:blood": {
+      "values": [
+        {
+          "target": "visionrealm:stripped_blood_corroded_cherry_wood"
+        }
+      ]
+    }
+  }
+}

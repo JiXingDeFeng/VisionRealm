@@ -1,9 +1,9 @@
 package io.github.jixingdefeng.visionrealm.api.event.erosion.block;
 
 import com.mojang.serialization.Codec;
-import io.github.jixingdefeng.visionrealm.common.erosion.manager.infection.block.BlockErosionEntryManager;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
-import io.github.jixingdefeng.visionrealm.core.data.erosion.block.BlockErosionReloadListener;
+import io.github.jixingdefeng.visionrealm.core.erosion.block.BlockErosionEntryStore;
+import io.github.jixingdefeng.visionrealm.core.server.packs.resources.erosion.block.BlockErosionReloadListener;
 import io.github.jixingdefeng.visionrealm.impl.erosion.infection.block_entry.BaseBlockErosionEntry;
 import net.neoforged.bus.api.Event;
 
@@ -22,7 +22,7 @@ import java.util.List;
  * <pre>{@code
  * @SubscribeEvent
  * public static void onRegisterLoaders(BlockErosionLoaderRegisterEvent event) {
- *     event.registryLoader("erosion/block_erosion/custom", CustomBlockErosionKey.CODEC);
+ *     event.registryLoader("custom", CustomBlockErosionKey.CODEC);
  * }
  * }</pre>
  *
@@ -42,7 +42,7 @@ public class BlockErosionLoaderRegisterEvent extends Event {
     /**
      * Registers a block erosion loader for the specified path.
      *
-     * @param path  The resource path where JSON files are located (e.g., "erosion/block_erosion/custom")
+     * @param path  The resource path where JSON files are located (e.g., "custom/block")
      * @param codec The codec used to decode JSON files into {@link BaseBlockErosionEntry} instances
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -50,7 +50,7 @@ public class BlockErosionLoaderRegisterEvent extends Event {
         try {
             this.pendingLoaders.add(
                     new BlockErosionReloadListener.PendingLoader(
-                            BlockErosionEntryManager.PATH + '/' + path,
+                            BlockErosionEntryStore.PATH + '/' + path,
                             (Codec<BaseBlockErosionEntry<?, ?>>) codec
                     )
             );

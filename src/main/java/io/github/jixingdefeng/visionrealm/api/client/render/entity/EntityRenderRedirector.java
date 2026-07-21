@@ -3,7 +3,7 @@ package io.github.jixingdefeng.visionrealm.api.client.render.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,15 +12,6 @@ import org.jetbrains.annotations.NotNull;
  * This interface provides a mechanism to customize how entities are rendered by intercepting
  * or replacing rendering calls. It serves as an extension point for adding custom rendering
  * effects, conditional rendering logic, or complete rendering overrides.
- * </p>
- * <p>
- * <b>Common use cases:</b>
- * <ul>
- *   <li>Adding visual effects (particles, shaders, overlays) to entities</li>
- *   <li>Implementing distance-based or state-based rendering optimizations</li>
- *   <li>Providing custom rendering for modded entities</li>
- *   <li>Debug visualization (hitboxes, paths, status indicators)</li>
- * </ul>
  * </p>
  * <p>
  * <b>Implementation approaches:</b>
@@ -62,21 +53,16 @@ import org.jetbrains.annotations.NotNull;
  * }
  * }</pre>
  * </p>
- * <p>
- * <b>Performance considerations:</b>
- * Render methods are called frequently (potentially every frame for each visible entity).
- * Keep implementations lightweight and avoid expensive operations.
- * </p>
  *
- * @param <T> the entity type that this redirector handles
+ * @param <E> the entity type that this redirector handles
  *
  * @see net.minecraft.client.renderer.entity.EntityRenderer
- * @see #redirectRenderToBuffer(EntityModel, T, PoseStack, VertexConsumer, int, int, int)
+ * @see #renderToBuffer(EntityModel, E, PoseStack, VertexConsumer, int, int, int)
  *
  * @author JiXingDeFeng
  * @since 0.0.1-dev
  */
-public interface EntityRenderRedirector<T extends Entity> {
+public interface EntityRenderRedirector<E extends LivingEntity, M extends EntityModel<E>> {
 
     /**
      * Redirects the rendering of an entity model to a vertex buffer with the entity parameter.
@@ -102,14 +88,22 @@ public interface EntityRenderRedirector<T extends Entity> {
      *           {@code EntityModel.renderToBuffer()} calls. The entity parameter is
      *           extracted from the local variables of the intercepted method.
      * @implSpec The default implementation calls
-     *           {@link #redirectRenderToBuffer(EntityModel, PoseStack, VertexConsumer, int, int, int)}
+     *           {@link #renderToBuffer(EntityModel, PoseStack, VertexConsumer, int, int, int)}
      *           with the same parameters (excluding the entity). Overriding implementations
      *           should either call the super method or provide equivalent functionality.
      *
      * @see EntityModel#renderToBuffer(PoseStack, VertexConsumer, int, int, int)
      */
-    default void redirectRenderToBuffer(@NotNull EntityModel<T> model, @NotNull T entity, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color) {
-        this.redirectRenderToBuffer(model, poseStack, vertexConsumer, packedLight, packedOverlay, color);
+    default void renderToBuffer(
+            @NotNull M model,
+            @NotNull E entity,
+            PoseStack poseStack,
+            VertexConsumer vertexConsumer,
+            int packedLight,
+            int packedOverlay,
+            int color
+    ) {
+        this.renderToBuffer(model, poseStack, vertexConsumer, packedLight, packedOverlay, color);
     }
 
     /**
@@ -140,9 +134,16 @@ public interface EntityRenderRedirector<T extends Entity> {
      *           Overriding implementations must ensure the model is rendered to the buffer.
      *
      * @see EntityModel#renderToBuffer(PoseStack, VertexConsumer, int, int, int)
-     * @see #redirectRenderToBuffer(EntityModel, T, PoseStack, VertexConsumer, int, int, int)
+     * @see #renderToBuffer(EntityModel, E, PoseStack, VertexConsumer, int, int, int)
      */
-    default void redirectRenderToBuffer(@NotNull EntityModel<T> model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color) {
+    default void renderToBuffer(
+            @NotNull M model,
+            PoseStack poseStack,
+            VertexConsumer vertexConsumer,
+            int packedLight,
+            int packedOverlay,
+            int color
+    ) {
         model.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, color);
     }
 }

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import io.github.jixingdefeng.visionrealm.core.entity.client.animation.AdministratorAnimation;
-import io.github.jixingdefeng.visionrealm.core.entity.custom.AdministratorEntity;
+import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-public class AdministratorModel<T extends AdministratorEntity> extends HierarchicalModel<T> {
+public class AdministratorModel<T extends Administrator> extends HierarchicalModel<T> {
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(VisionRealm.MOD_ID, "administrator_model"), "main");
 	private final ModelPart overall;
 	private final ModelPart head;

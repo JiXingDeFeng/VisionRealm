@@ -3,12 +3,15 @@ package io.github.jixingdefeng.visionrealm.impl.incident;
 import io.github.jixingdefeng.visionrealm.api.selector.game.RegisteredTargetSelector;
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -16,7 +19,7 @@ import java.util.function.Function;
  * A simple implementation of {@link RegisteredTargetSelector}.
  * <p>
  * This class stores a target selector factory and extraction functions.
- * The selector is created on-demand when {@link #getTarget(Level, RandomSource)} is called,
+ * The selector is created on-demand when {@link #getTarget(ServerLevel, RandomSource)} is called,
  * ensuring it always uses the current level and random source.
  * </p>
  *
@@ -48,15 +51,29 @@ import java.util.function.Function;
  * @since 0.0.2-dev
  */
 public class SimpleRegisteredTargetSelector<T, S extends TargetSelector<T, S>> implements RegisteredTargetSelector<T, S> {
-    protected final BiFunction<Level, RandomSource, S> targetSelector;
+    protected final BiFunction<ServerLevel, RandomSource, S> targetSelector;
     protected final Function<S, Collection<T>> extractor;
     protected final Function<S, T> singleExtractor;
     protected final Collection<ResourceKey<Level>> dimension;
 
+    /**
+     * Constructs a registered target selector.
+     * <p>
+     * Exactly one of {@code extractor} or {@code singleExtractor} should be non‑{@code null},
+     * indicating whether the selector returns multiple targets or a single target.
+     *
+     * @param extractor       function that extracts a collection of targets from the selector
+     *                        (used when the selector returns multiple targets)
+     * @param singleExtractor function that extracts a single target from the selector
+     *                        (used when the selector returns a single target)
+     * @param targetSelector  factory that creates the underlying {@link TargetSelector}
+     *                        given a {@link Level} and {@link RandomSource}
+     * @param dimension       collection of dimension keys where this selector is valid
+     */
     public SimpleRegisteredTargetSelector(
             @Nullable Function<S, Collection<T>> extractor,
             @Nullable Function<S, T> singleExtractor,
-            BiFunction<Level, RandomSource, S> targetSelector,
+            BiFunction<ServerLevel, RandomSource, S> targetSelector,
             Collection<ResourceKey<Level>> dimension
     ) {
         this.targetSelector = targetSelector;
@@ -66,20 +83,34 @@ public class SimpleRegisteredTargetSelector<T, S extends TargetSelector<T, S>> i
     }
 
     @Override
-    public S targetSelector(Level level, RandomSource random) {
+    public S targetSelector(ServerLevel level, RandomSource random) {
         return this.targetSelector.apply(level, random);
     }
 
     @Override
-    public Collection<T> getTarget(Level level, RandomSource random) {
+    public Collection<T> getTarget(ServerLevel level, RandomSource random) {
         return this.singleExtractor != null
                ? Collections.singletonList(this.singleExtractor.apply(this.targetSelector(level, random)))
                : this.extractor != null ? this.extractor.apply(this.targetSelector(level, random)) : Collections.emptyList();
     }
 
     @Override
+    public Collection<T> getTarget(MinecraftServer server, RandomSource random) {
+        return this.getLevels(server).stream()
+                .flatMap(level -> this.getTarget(level, random).stream())
+                .toList();
+    }
+
+    @Override
     public Collection<ResourceKey<Level>> getDimension() {
         return this.dimension;
+    }
+
+    @Override
+    public List<ServerLevel> getLevels(MinecraftServer server) {
+        return this.dimension.stream()
+                .map(server::getLevel)
+                .toList();
     }
 
     @Override

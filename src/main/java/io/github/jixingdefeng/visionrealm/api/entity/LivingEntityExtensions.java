@@ -5,11 +5,6 @@ import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Extension interface for {@link LivingEntity} to add custom behavior.
- * <p>
- * This interface provides additional hooks for controlling entity death
- * animations, sound effects, and other behaviors without requiring
- * complex inheritance hierarchies.
- * </p>
  *
  * @author JiXingDeFeng
  * @see LivingEntity
@@ -47,7 +42,6 @@ public interface LivingEntityExtensions {
      * Returning {@code false} can be useful for:
      * <ul>
      *   <li>Silent damage effects (e.g., environmental damage)</li>
-     *   <li>Entities that shouldn't express pain (e.g., mindless creatures)</li>
      *   <li>Custom damage handling that manages sounds separately</li>
      * </ul>
      * </p>

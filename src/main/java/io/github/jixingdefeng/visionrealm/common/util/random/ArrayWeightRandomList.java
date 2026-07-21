@@ -23,6 +23,14 @@ import java.util.function.Function;
  *   <li>Iteration performance is better with {@link #forEach}, while {@link #unwrap} incurs additional boxing overhead</li>
  * </ul>
  * Suitable for scenarios requiring frequent random selections.
+ * <p>
+ * <b>Validation on construction:</b>
+ * All constructors enforce the following invariants, throwing exceptions if violated:
+ * <ul>
+ *   <li>The number of values and weights must match</li>
+ *   <li>The list must contain at least one entry</li>
+ *   <li>The total weight must be strictly greater than zero</li>
+ * </ul>
  *
  * @param <T> the type of values
  * @author JiXingDeFeng
@@ -59,7 +67,7 @@ public class ArrayWeightRandomList<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public ArrayWeightRandomList(List<T> values, Function<T,Integer> generator) {
+    public ArrayWeightRandomList(List<T> values, Function<T, Integer> generator) {
         this.values = (T[]) values.toArray();
         weights = new int[this.values.length];
         int totalWeight = 0;
@@ -70,6 +78,7 @@ public class ArrayWeightRandomList<T> {
         }
 
         this.totalWeight = totalWeight;
+        this.validate();
     }
 
     @SuppressWarnings("unchecked")
@@ -88,6 +97,7 @@ public class ArrayWeightRandomList<T> {
         this.values = values;
         this.weights = weights;
         this.totalWeight = totalWeight;
+        this.validate();
     }
 
     public ArrayWeightRandomList(T[] values, int[] weights) {
@@ -95,14 +105,15 @@ public class ArrayWeightRandomList<T> {
             throw new IllegalArgumentException("The number of values and weights do not match");
         }
 
-        this.values = values;
-        this.weights = weights;
+        this.values = values.clone();
+        this.weights = weights.clone();
         int totalWeight = 0;
         for (int i : weights) {
             totalWeight += i;
         }
 
         this.totalWeight = totalWeight;
+        this.validate();
     }
     
     public int size() {
@@ -199,6 +210,16 @@ public class ArrayWeightRandomList<T> {
         @NotNull
         public Weight getWeight() {
             return this.weight;
+        }
+    }
+
+    protected void validate() {
+        if (this.values.length != this.weights.length) {
+            throw new IllegalArgumentException("The number of values and weight do not match");
+        } else if (this.values.length == 0) {
+            throw new IllegalStateException("ArrayWeightRandomList is empty");
+        } else if (this.totalWeight == 0) {
+            throw new IllegalStateException("ArrayWeightRandomList total weight cannot be 0");
         }
     }
 

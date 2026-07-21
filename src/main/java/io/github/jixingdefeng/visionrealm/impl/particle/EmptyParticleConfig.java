@@ -25,7 +25,7 @@ import java.util.List;
 public class EmptyParticleConfig implements ParticleConfig {
     public static final EmptyParticleConfig INSTANCE = new EmptyParticleConfig();
     public static final MapCodec<EmptyParticleConfig> MAP_CODEC = MapCodec.assumeMapUnsafe(Codec.unit(INSTANCE));
-    private final SingletonParticleConfig particleConfig = ImmutableParticleConfig.of(ParticleTypes.POOF, -1, 0);
+    private static final SingletonParticleConfig PARTICLE_CONFIG = ImmutableParticleConfig.of(ParticleTypes.POOF, -1, 0);
 
     private EmptyParticleConfig() {
     }
@@ -33,7 +33,7 @@ public class EmptyParticleConfig implements ParticleConfig {
     @Override
     @NotNull
     public SingletonParticleConfig getSingleton() {
-        return this.particleConfig;
+        return PARTICLE_CONFIG;
     }
 
     @NotNull
@@ -45,6 +45,6 @@ public class EmptyParticleConfig implements ParticleConfig {
     @NotNull
     @Override
     public List<ParticleConfig> unwrap() {
-        return this.particleConfig.unwrap();
+        return PARTICLE_CONFIG.unwrap();
     }
 }

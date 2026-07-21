@@ -173,212 +173,6 @@ public interface SingletonParticleConfig extends ParticleConfig {
     }
 
     /**
-     * Spawns particles at a world position using the particle's configured Y offset.
-     * <p>
-     * This is a convenience method that calls {@link #spawnParticles(SingletonParticleConfig, Vec3, Level, double)}
-     * with the particle's configured Y offset.
-     *
-     * @param particle the particle configuration
-     * @param position the world position to spawn particles at
-     * @param level    the level to spawn particles in
-     */
-    static void spawnParticles(@NotNull SingletonParticleConfig particle, @NotNull Vec3 position, @NotNull Level level) {
-        spawnParticles(particle, position, level, particle.yOffset());
-    }
-
-    /**
-     * Spawns particles at a world position with a custom Y offset.
-     * <p>
-     * Uses the provided position as the base spawn point, then applies the particle's
-     * configured X/Z offsets and the provided Y offset.
-     *
-     * @param particle the particle configuration
-     * @param position the world position to spawn particles at
-     * @param level    the level to spawn particles in
-     * @param yOffset  vertical offset from the base position
-     */
-    static void spawnParticles(@NotNull SingletonParticleConfig particle, @NotNull Vec3 position, @NotNull Level level, double yOffset) {
-        spawnParticles(particle, level, position, particle.xOffset(), yOffset, particle.zOffset(), false);
-    }
-
-    /**
-     * Spawns particles at a world position with full offset control.
-     * <p>
-     * This method handles both server and client-side spawning:
-     * <ul>
-     *   <li>On server: Uses {@link ServerLevel#sendParticles} for optimized network transmission</li>
-     *   <li>On client: Falls back to {@link #spawnParticles(SingletonParticleConfig, Vec3, ClientLevel, RandomSource, boolean)}</li>
-     * </ul>
-     *
-     * @param particle the particle configuration
-     * @param level    the level to spawn particles in
-     * @param position the base spawn position (before offsets)
-     * @param xOffset  X offset to add to base position
-     * @param yOffset  Y offset to add to base position
-     * @param zOffset  Z offset to add to base position
-     * @param applyConfigOffset whether to add the particle's configured offsets to the spawn position
-     */
-    static void spawnParticles(
-            @NotNull SingletonParticleConfig particle,
-            @NotNull Level level,
-            @NotNull Vec3 position,
-            double xOffset,
-            double yOffset,
-            double zOffset,
-            boolean applyConfigOffset
-    ) {
-        if (applyConfigOffset) {
-            position.add(particle.xOffset(), particle.yOffset(), particle.zOffset());
-        }
-
-        if (level instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(
-                    particle.particleType(),
-                    position.x + xOffset,
-                    position.y + yOffset,
-                    position.z + zOffset,
-                    particle.count(level.random),
-                    particle.spreadX(),
-                    particle.spreadY(),
-                    particle.spreadZ(),
-                    particle.speed()
-            );
-        } else {
-            spawnParticles(particle, position.add(xOffset, yOffset, zOffset), (ClientLevel) level, level.getRandom(), false);
-        }
-    }
-
-    /**
-     * Spawns particles at a specific world position with configurable offset application.
-     * <p>
-     * This method handles particle spawning based on the configuration:
-     * <ul>
-     *   <li><b>Directional mode ({@code count == 0})</b>: Spawns a single particle with velocity
-     *       {@code speed * (spreadX, spreadY, spreadZ)}. This creates a particle moving in a fixed direction.</li>
-     *   <li><b>Multi-particle mode ({@code count > 0})</b>: Spawns multiple particles with
-     *       Gaussian-distributed random positions and velocities:
-     *       <ul>
-     *         <li>Position variation: {@code nextGaussian() * spread}</li>
-     *         <li>Velocity variation: {@code nextGaussian() * speed}</li>
-     *       </ul>
-     *   </li>
-     * </ul>
-     *
-     * <p>The method can optionally apply the particle's configured X, Y, Z offsets to the
-     * spawn position before generating particles.
-     *
-     * @param particle          the particle configuration
-     * @param position          the world position to spawn particles at
-     * @param level             the level to spawn particles in
-     * @param random            the random source for Gaussian distributions
-     * @param applyConfigOffset whether to add the particle's configured offsets to the spawn position
-     */
-    static void spawnParticles(
-            @NotNull SingletonParticleConfig particle,
-            @NotNull Vec3 position,
-            @NotNull ClientLevel level,
-            RandomSource random,
-            boolean applyConfigOffset
-    ) {
-        if (applyConfigOffset) {
-            position.add(particle.xOffset(), particle.yOffset(), particle.zOffset());
-        }
-
-        int count = particle.count(random);
-        if (count == 0) {
-            double d0 = particle.speed() * particle.spreadX();
-            double d1 = particle.speed() * particle.spreadY();
-            double d2 = particle.speed() * particle.spreadZ();
-            level.addParticle(particle.particleType(), false, position.x, position.y, position.z, d0, d1, d2);
-        } else {
-            for (int i = 0; i < count; i++) {
-                double d0 = random.nextGaussian() * particle.spreadX();
-                double d1 = random.nextGaussian() * particle.spreadY();
-                double d2 = random.nextGaussian() * particle.spreadZ();
-                level.addParticle(
-                        particle.particleType(),
-                        false, position.x + d0, position.y + d1, position.z + d2,
-                        random.nextGaussian() * particle.speed(),
-                        random.nextGaussian() * particle.speed(),
-                        random.nextGaussian() * particle.speed()
-                );
-            }
-        }
-    }
-
-    /**
-     * Returns the singleton particle configuration.
-     *
-     * @return this
-     */
-    @Override
-    @NotNull
-    default SingletonParticleConfig getSingleton() {
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return true
-     */
-    @Override
-    default boolean isSingleton() {
-        return true;
-    }
-
-    /**
-     * Returns the list of particle configurations.
-     * <p>
-     * For singleton mode, returns a single-element list containing itself.
-     *
-     * @return A list containing this configuration
-     */
-    @NotNull
-    @Override
-    default List<ParticleConfig> unwrap() {
-        return List.of(this);
-    }
-
-    /**
-     * Spawns particles at the entity's position using this configuration.
-     * <p>
-     * Convenience method that delegates to {@link #spawnParticles(Level, Vec3)}.
-     *
-     * @param entity the entity to spawn particles at
-     */
-    default void spawnParticles(Entity entity) {
-        spawnParticles(entity.level(), entity.position());
-    }
-
-    /**
-     * Spawns particles at the specified world position using this configuration.
-     * <p>
-     * This method uses the particle's configured X, Y, Z offsets and does not apply
-     * any additional offset processing
-     *
-     * @param level    the level to spawn particles in
-     * @param position the world position to spawn particles at
-     */
-    default void spawnParticles(Level level, Vec3 position) {
-        spawnParticles(this, position, level);
-    }
-
-    /**
-     * Gets a random particle count within the configured range.
-     * <p>
-     * Delegates to the {@link IntProvider#sample(RandomSource)} method of the underlying
-     * count provider, which handles all the complexity of generating random values
-     * according to the specific provider type (uniform, constant, clamped normal, etc.).
-     *
-     * @param random the random source
-     * @return a random count value from the configured provider
-     */
-    default int count(RandomSource random) {
-        return this.countProvider().sample(random);
-    }
-
-    /**
      * Gets the type of particle to spawn.
      *
      * @return the particle options
@@ -455,4 +249,191 @@ public interface SingletonParticleConfig extends ParticleConfig {
      * @return the Z offset
      */
     double zOffset();
+
+    /**
+     * Gets a random particle count within the configured range.
+     * <p>
+     * Delegates to the {@link IntProvider#sample(RandomSource)} method of the underlying
+     * count provider, which handles all the complexity of generating random values
+     * according to the specific provider type (uniform, constant, clamped normal, etc.).
+     *
+     * @param random the random source
+     * @return a random count value from the configured provider
+     */
+    default int count(RandomSource random) {
+        return this.countProvider().sample(random);
+    }
+
+    /**
+     * Spawns particles at the entity's position using this configuration.
+     * <p>
+     * Convenience method that delegates to {@link #spawnParticles(Vec3, Level)}.
+     *
+     * @param entity the entity to spawn particles at
+     */
+    default void spawnParticles(Entity entity) {
+        spawnParticles(entity.position(), entity.level());
+    }
+
+    /**
+     * Spawns particles at a world position using the particle's configured Y offset.
+     * <p>
+     * This is a convenience method that calls {@link #spawnParticles(Vec3, Level, double)}
+     * with the particle's configured Y offset.
+     *
+     * @param position the world position to spawn particles at
+     * @param level    the level to spawn particles in
+     */
+    default void spawnParticles(@NotNull Vec3 position, @NotNull Level level) {
+        this.spawnParticles(position, level, this.yOffset());
+    }
+
+    /**
+     * Spawns particles at a world position with a custom Y offset.
+     * <p>
+     * Uses the provided position as the base spawn point, then applies the particle's
+     * configured X/Z offsets and the provided Y offset.
+     *
+     * @param position the world position to spawn particles at
+     * @param level    the level to spawn particles in
+     * @param yOffset  vertical offset from the base position
+     */
+    default void spawnParticles(@NotNull Vec3 position, @NotNull Level level, double yOffset) {
+        this.spawnParticles(level, position, this.xOffset(), yOffset, this.zOffset(), false);
+    }
+
+    /**
+     * Spawns particles at a world position with full offset control.
+     * <p>
+     * This method handles both server and client-side spawning:
+     * <ul>
+     *   <li>On server: Uses {@link ServerLevel#sendParticles} for optimized network transmission</li>
+     *   <li>On client: Falls back to {@link #spawnParticles(Vec3, ClientLevel, RandomSource, boolean)}</li>
+     * </ul>
+     *
+     * @param level    the level to spawn particles in
+     * @param position the base spawn position (before offsets)
+     * @param xOffset  X offset to add to base position
+     * @param yOffset  Y offset to add to base position
+     * @param zOffset  Z offset to add to base position
+     * @param applyConfigOffset whether to add the particle's configured offsets to the spawn position
+     */
+    default void spawnParticles(
+            @NotNull Level level,
+            @NotNull Vec3 position,
+            double xOffset,
+            double yOffset,
+            double zOffset,
+            boolean applyConfigOffset
+    ) {
+        if (applyConfigOffset) {
+            position.add(this.xOffset(), this.yOffset(), this.zOffset());
+        }
+
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(
+                    this.particleType(),
+                    position.x + xOffset,
+                    position.y + yOffset,
+                    position.z + zOffset,
+                    this.count(level.random),
+                    this.spreadX(),
+                    this.spreadY(),
+                    this.spreadZ(),
+                    this.speed()
+            );
+        } else {
+            this.spawnParticles(position.add(xOffset, yOffset, zOffset), (ClientLevel) level, level.getRandom(), false);
+        }
+    }
+
+    /**
+     * Spawns particles at a specific world position with configurable offset application.
+     * <p>
+     * This method handles particle spawning based on the configuration:
+     * <ul>
+     *   <li><b>Directional mode ({@code count == 0})</b>: Spawns a single particle with velocity
+     *       {@code speed * (spreadX, spreadY, spreadZ)}. This creates a particle moving in a fixed direction.</li>
+     *   <li><b>Multi-particle mode ({@code count > 0})</b>: Spawns multiple particles with
+     *       Gaussian-distributed random positions and velocities:
+     *       <ul>
+     *         <li>Position variation: {@code nextGaussian() * spread}</li>
+     *         <li>Velocity variation: {@code nextGaussian() * speed}</li>
+     *       </ul>
+     *   </li>
+     * </ul>
+     *
+     * <p>The method can optionally apply the particle's configured X, Y, Z offsets to the
+     * spawn position before generating particles.
+     *
+     * @param position          the world position to spawn particles at
+     * @param level             the level to spawn particles in
+     * @param random            the random source for Gaussian distributions
+     * @param applyConfigOffset whether to add the particle's configured offsets to the spawn position
+     */
+    default void spawnParticles(
+            @NotNull Vec3 position,
+            @NotNull ClientLevel level,
+            RandomSource random,
+            boolean applyConfigOffset
+    ) {
+        if (applyConfigOffset) {
+            position.add(this.xOffset(), this.yOffset(), this.zOffset());
+        }
+
+        int count = this.count(random);
+        if (count == 0) {
+            double d0 = this.speed() * this.spreadX();
+            double d1 = this.speed() * this.spreadY();
+            double d2 = this.speed() * this.spreadZ();
+            level.addParticle(this.particleType(), false, position.x, position.y, position.z, d0, d1, d2);
+        } else {
+            for (int i = 0; i < count; i++) {
+                double d0 = random.nextGaussian() * this.spreadX();
+                double d1 = random.nextGaussian() * this.spreadY();
+                double d2 = random.nextGaussian() * this.spreadZ();
+                level.addParticle(
+                        this.particleType(),
+                        false, position.x + d0, position.y + d1, position.z + d2,
+                        random.nextGaussian() * this.speed(),
+                        random.nextGaussian() * this.speed(),
+                        random.nextGaussian() * this.speed()
+                );
+            }
+        }
+    }
+
+    /**
+     * Returns the singleton particle configuration.
+     *
+     * @return this
+     */
+    @Override
+    @NotNull
+    default SingletonParticleConfig getSingleton() {
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return true
+     */
+    @Override
+    default boolean isSingleton() {
+        return true;
+    }
+
+    /**
+     * Returns the list of particle configurations.
+     * <p>
+     * For singleton mode, returns a single-element list containing itself.
+     *
+     * @return A list containing this configuration
+     */
+    @NotNull
+    @Override
+    default List<ParticleConfig> unwrap() {
+        return List.of(this);
+    }
 }

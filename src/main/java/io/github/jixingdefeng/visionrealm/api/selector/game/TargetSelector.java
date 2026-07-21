@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,14 +47,15 @@ import java.util.stream.Stream;
  * PositionSelector selector = TargetSelectors.positionSelector()
  *     .centerAt(player.position())
  *     .inRange(50)
- *     .inAir();
- *
- * // Execute once
- * List<Vec3> results = selector.toList();
+ *     .inAir()
+ *     .randomObtain();
  *
  * // Reuse with copy
  * PositionSelector copy = selector.copy();
- * Optional<Vec3> single = copy.getSingle();
+ *
+ * // Execute
+ * List<Vec3> results = selector.toList();
+ * Optional<Vec3> single = selector.get();
  * }</pre>
  *
  * @param <T> The target type returned by the selector (e.g., Vec3, Entity, BlockState)
@@ -91,6 +93,7 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
      * Restricts selection to targets within the specified biomes.
      * <p>This is a setter operation. Pass an empty collection to clear the filter.
      * Multiple calls will overwrite the previous value.</p>
+     *
      * <p><strong>Note:</strong> Only biomes that are in the whitelist AND NOT in the
      * blacklist will be selected. If the whitelist is empty, any biome not in the
      * blacklist is allowed.</p>
@@ -105,6 +108,7 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
      * Excludes targets within the specified biomes from selection.
      * <p>This is a setter operation. Pass an empty collection to clear the filter.
      * Multiple calls will overwrite the previous value.</p>
+     *
      * <p><strong>Note:</strong> Biomes in the blacklist are excluded. If a whitelist
      * is also set, biomes must be in the whitelist AND NOT in the blacklist to be
      * allowed. If only the blacklist is set, all biomes except those in the blacklist
@@ -175,6 +179,38 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
     S inBox(Vec3 min, Vec3 max);
 
     /**
+     * Restricts selection to a cuboid area defined by the given axis-aligned bounding box.
+     * <p>If a reference point is set via {@link #centerAt(Vec3)}, the bounding box coordinates
+     * are treated as relative to that reference point. Otherwise, coordinates are treated
+     * as absolute world coordinates.</p>
+     *
+     * @param box The axis-aligned bounding box defining the selection region
+     * @return The current selector instance for chaining
+     * @see #inBox(Vec3, Vec3)
+     */
+    S inBox(AABB box);
+
+    /**
+     * Restricts selection to a cuboid area defined by the six coordinate bounds.
+     * <p>If a reference point is set via {@link #centerAt(Vec3)}, the bounds coordinates
+     * are treated as relative to that reference point. Otherwise, coordinates are treated
+     * as absolute world coordinates.</p>
+     * <p>Note that the parameter order is <strong>max</strong> values first, followed by
+     * <strong>min</strong> values. This matches the order of {@link AABB#getMaxPosition()} etc.,
+     * but care should be taken to supply the correct extremes.</p>
+     *
+     * @param maxX The maximum x-coordinate
+     * @param maxY The maximum y-coordinate
+     * @param maxZ The maximum z-coordinate
+     * @param minX The minimum x-coordinate
+     * @param minY The minimum y-coordinate
+     * @param minZ The minimum z-coordinate
+     * @return The current selector instance for chaining
+     * @see #inBox(Vec3, Vec3)
+     */
+    S inBox(double maxX, double maxY, double maxZ, double minX, double minY, double minZ);
+
+    /**
      * Selects only targets within loaded chunks.
      * <p>Targets in unloaded chunks will be excluded from selection.</p>
      *
@@ -185,13 +221,13 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
 
     /**
      * Adds a custom filter to narrow down the selection.
-     * <p>Multiple {@code where} calls are combined using AND logic.
+     * <p>Multiple {@code filter} calls are combined using AND logic.
      * Filters are applied during selection execution.</p>
      *
      * @param filter The predicate condition for filtering targets
      * @return The current selector instance for chaining
      */
-    S where(Predicate<? super T> filter);
+    S filter(Predicate<? super T> filter);
 
     /**
      * Sets the global random source for random selection operations.
@@ -240,11 +276,15 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
     S randomObtain(TargetCustomizer<T, Level, RandomSource> customizer, @Nullable RandomSource random);
 
     /**
-     * Limits the maximum number of targets to retrieve.
-     * <p>If {@code limit < 1}, no limit is applied (returns all matching targets).</p>
+     * Sets the maximum total number of targets this selector may return across
+     * all extractions.
+     * <p>
+     * This is a global limit applied to the final accumulated results.
+     * If {@code limit} is less than 1, no limit is enforced.
+     * </p>
      *
-     * @param limit The maximum number of targets (values {@code < 1} mean no limit)
-     * @return The current selector instance for chaining
+     * @param limit the global result limit (values &lt; 1 disable the limit)
+     * @return the current selector instance for chaining
      */
     S limit(int limit);
 
@@ -343,7 +383,7 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
      * @return An {@code Optional} containing the element at the generated index, or empty if invalid
      * @throws NullPointerException if generator is null
      */
-    default Optional<T> get(Function<Integer, Integer> generator) {
+    default Optional<T> get(IntFunction<Integer> generator) {
         List<T> list = this.toList();
         return Optional.ofNullable(list.get(generator.apply(list.size())));
     }

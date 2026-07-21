@@ -2,7 +2,7 @@ package io.github.jixingdefeng.visionrealm.common.util.file;
 
 import net.minecraft.resources.ResourceLocation;
 
-public class PathUtil {
+public final class PathUtil {
 
     /**
      * Validates that the file path follows the resource naming convention:
@@ -13,50 +13,132 @@ public class PathUtil {
      * <p>
      * <b>Note: The base path should not end with a slash ("/").</b>
      *
+     * <p><b>Behavior of {@code subPath} parameter:</b></p>
+     * <ul>
+     *   <li>{@code subPath = true}: Only the first subfolder after the base path is extracted.
+     *       Example: {@code "erosion/block/minecraft/stone.json"} → {@code "minecraft"}</li>
+     *   <li>{@code subPath = false}: The entire subdirectory path after the base path is extracted.
+     *       Example: {@code "erosion/block/minecraft/overworld/stone.json"} → {@code "minecraft/overworld"}</li>
+     * </ul>
+     *
      * @param resourceId The resource's location (namespace:path)
      * @param fileId     The file's resource location
-     * @param basePath   The base path (without trailing slash, e.g., "erosion/block")
-     * @return true if both conditions are satisfied
+     * @param basePath   The base path (without trailing slash, e.g., {@code "erosion/block"})
+     * @param subPath    Whether to match only the first subfolder ({@code true}) or the full subdirectory path ({@code false})
+     * @return {@code true} if both conditions are satisfied
      */
-    public static boolean isValidResourcePath(ResourceLocation resourceId, ResourceLocation fileId, String basePath) {
+    public static boolean isValidResourcePath(
+            ResourceLocation resourceId,
+            ResourceLocation fileId,
+            String basePath,
+            boolean subPath
+    ) {
         String filePath = fileId.getPath();
         String fileName = extractFileName(filePath, false);
-        String folderName = extractFirstSubfolder(filePath, basePath);
+        String folderName = subPath
+                            ? extractFirstSubfolder(filePath, basePath)
+                            : extractSubdirectoryPath(filePath, basePath);
         return resourceId.getPath().equals(fileName) && resourceId.getNamespace().equals(folderName);
     }
 
     /**
      * Extracts the file name from a path string.
+     * <p>
+     * The file name is the part after the last directory separator ('/').
+     * If {@code keepSuffix} is {@code true}, the file extension (e.g., ".json") is preserved;
+     * otherwise, it is removed using {@link #removeSuffix(String)}.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>{@code "path/to/file.json"} with {@code keepSuffix = true} → {@code "file.json"}</li>
+     *   <li>{@code "path/to/file.json"} with {@code keepSuffix = false} → {@code "file"}</li>
+     * </ul>
      *
-     * @param basePath  The full file path (should not end with a slash "/")
-     * @param keepExtension Whether to keep the file extension (e.g., ".json")
-     * @return The file name (with extension if {@code keepExtension} is {@code true})
+     * @param basePath   The full file path (should not end with a slash)
+     * @param keepSuffix Whether to keep the file extension
+     * @return The file name (with extension if {@code keepSuffix} is {@code true})
      */
-    public static String extractFileName(String basePath, boolean keepExtension) {
-        if (!keepExtension) {
-            int index = basePath.contains(".") ? basePath.lastIndexOf(".") : basePath.length();
-            basePath = basePath.substring(0, index);
+    public static String extractFileName(String basePath, boolean keepSuffix) {
+        if (!keepSuffix) {
+            basePath = removeSuffix(basePath);
         }
 
         return basePath.substring(basePath.lastIndexOf('/') + 1);
     }
 
     /**
-     * Extracts the folder name from a path string relative to the base path.
+     * Removes the file extension (suffix) from a path string.
      * <p>
-     * For example, given base path "erosion/block/" and a file at
-     * "data/erosion/block/minecraft/overworld/stone.json", this method returns "minecraft".
-     * If the file is directly under the base path (no additional subfolder),
-     * it returns an empty string.
+     * This method removes everything after the last dot ('.') character,
+     * provided that the dot appears after the last directory separator ('/').
+     * This prevents accidentally removing dots that are part of directory names.
      * <p>
-     * <b>Note: The base path should not end with a slash ("/").</b>
+     * Examples:
+     * <ul>
+     *   <li>{@code "path/to/file.json"} → {@code "path/to/file"}</li>
+     *   <li>{@code "path/to/file.tar.gz"} → {@code "path/to/file.tar"}</li>
+     *   <li>{@code "path/to/folder.name/file.json"} → {@code "path/to/folder.name/file"}</li>
+     *   <li>{@code "path/to/file"} → {@code "path/to/file"} (no change)</li>
+     * </ul>
      *
-     * @param fullPath The full file path
-     * @param basePath The base path to strip (without trailing slash)
+     * @param path The path string (must not be {@code null})
+     * @return The path without the suffix (or the original path if no suffix is found)
+     */
+    public static String removeSuffix(String path) {
+        int lastSlash = path.lastIndexOf('/');
+        int lastDot = path.lastIndexOf('.');
+        if (lastDot > lastSlash) {
+            return path.substring(0, lastDot);
+        }
+
+        return path;
+    }
+
+    /**
+     * Removes a prefix from a path string, handling path separators correctly.
+     * <p>
+     * This method removes the prefix, accounting for the path separator {@code /}
+     * so that the resulting string does not start with a slash.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>{@code "erosion/block/minecraft/stone.json"} with prefix {@code "erosion/block"}
+     *       → {@code "minecraft/stone.json"}</li>
+     *   <li>{@code "erosion/block/minecraft/stone.json"} with prefix {@code "erosion/block/"}
+     *       → {@code "minecraft/stone.json"}</li>
+     * </ul>
+     *
+     * @param path   The full path string
+     * @param prefix The prefix to remove (may or may not end with a slash)
+     * @return The path with the prefix removed, without a leading slash
+     */
+    public static String removePrefix(String path, String prefix) {
+        if (path.startsWith(prefix)) {
+            int index = prefix.length() + (prefix.endsWith("/") ? 0 : 1);
+            return path.substring(index);
+        }
+
+        return path;
+    }
+
+    /**
+     * Extracts the first subfolder name from a path relative to the base path.
+     * <p>
+     * The base path may optionally end with a slash ({@code "/"}).
+     * <p>
+     * <b>Examples:</b>
+     * <ul>
+     *   <li>{@code "data/erosion/block/minecraft/overworld/stone.json"} with
+     *       base path {@code "erosion/block"} → {@code "minecraft"}</li>
+     *   <li>{@code "data/erosion/block/stone.json"} → {@code ""}</li>
+     * </ul>
+     *
+     * @param sourcePath The full file path
+     * @param basePath   The base path to strip (may or may not end with a slash)
      * @return The first subfolder name after the base path, or empty string if none
      */
-    public static String extractFirstSubfolder(String fullPath, String basePath) {
-        String subdirectories = extractSubdirectoryPath(fullPath, basePath);
+    public static String extractFirstSubfolder(String sourcePath, String basePath) {
+        String subdirectories = extractSubdirectoryPath(sourcePath, basePath);
         if (!subdirectories.isEmpty()) {
             int index = subdirectories.indexOf('/');
             if (index != -1) {
@@ -70,22 +152,29 @@ public class PathUtil {
     }
 
     /**
-     * Extracts the subdirectory part from a path string relative to the base path.
+     * Extracts the subdirectory path from a file path relative to the base path.
      * <p>
-     * For example, given base path "erosion/block" and a file at
-     * "data/erosion/block/minecraft/overworld/stone.json", this method returns "minecraft/overworld".
-     * If the file is directly under the base path, returns an empty string.
+     * The base path may optionally end with a slash ({@code "/"}).
      * <p>
-     * <b>Note: The base path should not end with a slash ("/").</b>
+     * <b>Examples:</b>
+     * <ul>
+     *   <li>{@code "data/erosion/block/minecraft/overworld/stone.json"} with
+     *       base path {@code "erosion/block"} → {@code "minecraft/overworld"}</li>
+     *   <li>{@code "data/erosion/block/stone.json"} → {@code ""}</li>
+     * </ul>
      *
      * @param sourcePath The full file path
-     * @param basePath   The base path to strip (without trailing slash)
+     * @param basePath   The base path to strip (may or may not end with a slash)
      * @return The subdirectory path after the base path, or empty string if none
      */
     public static String extractSubdirectoryPath(String sourcePath, String basePath) {
         int index = sourcePath.indexOf(basePath);
         if (index >= 0) {
-            int start = sourcePath.indexOf(basePath) + basePath.length() + 1;
+            int start = index + basePath.length();
+            if (!basePath.endsWith("/")) {
+                start = start + 1;
+            }
+
             int end = sourcePath.lastIndexOf("/");
             if (end > start) {
                 return sourcePath.substring(start, end);
@@ -93,5 +182,8 @@ public class PathUtil {
         }
 
         return "";
+    }
+
+    private PathUtil() {
     }
 }

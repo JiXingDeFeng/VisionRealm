@@ -1,9 +1,0 @@
-{
-  "block": "minecraft:cherry_planks",
-  "entry": [
-    {
-      "type": "visionrealm:blood",
-      "target": "visionrealm:blood_corroded_cherry_planks"
-    }
-  ]
-}

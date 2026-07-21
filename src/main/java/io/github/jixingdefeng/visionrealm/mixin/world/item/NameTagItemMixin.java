@@ -1,7 +1,7 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.item;
 
-import io.github.jixingdefeng.visionrealm.core.entity.custom.AdministratorEntity;
-import io.github.jixingdefeng.visionrealm.core.entity.custom.SecondaryTarget;
+import io.github.jixingdefeng.visionrealm.core.entity.ai.goal.SecondaryTarget;
+import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +19,7 @@ public class NameTagItemMixin {
     @Inject(method = "interactLivingEntity", at = @At("HEAD"), cancellable = true)
     public void interactLivingEntity(ItemStack stack, Player player, LivingEntity target,
                                      InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        if (target instanceof AdministratorEntity entity) {
+        if (target instanceof Administrator entity) {
             entity.addSecondaryTarget(player, SecondaryTarget.AngerType.RENAME);
             cir.setReturnValue(InteractionResult.FAIL);
             cir.cancel();

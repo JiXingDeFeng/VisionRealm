@@ -1,9 +1,9 @@
 package io.github.jixingdefeng.visionrealm.common.util.erosion;
 
-import io.github.jixingdefeng.visionrealm.api.erosion.infection.block.CanBeErosionBlock;
-import io.github.jixingdefeng.visionrealm.common.erosion.manager.biome.BiomeErosionManager;
-import io.github.jixingdefeng.visionrealm.common.erosion.manager.infection.block.BlockErosionEntryManager;
+import io.github.jixingdefeng.visionrealm.api.erosion.block.CanBeErosionBlock;
 import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
+import io.github.jixingdefeng.visionrealm.core.erosion.biome.BiomeErosionManager;
+import io.github.jixingdefeng.visionrealm.core.erosion.block.BlockErosionEntryStore;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class ErosionUtil {
+public final class ErosionUtil {
 
     public static ErosionType getBiomeErosionType(BlockPos pos, Level level) {
         return getBiomeErosionType(level.getBiome(pos).getKey());
@@ -21,30 +21,32 @@ public class ErosionUtil {
 
     public static ErosionType getBiomeErosionType(ResourceKey<Biome> biome) {
         Optional<BiomeErosionManager> manager = BiomeErosionManager.getInstance();
-        if (manager.isPresent()) {
-            return manager.get().getErosionType(biome);
-        } else {
-            return ErosionType.NONE;
-        }
+        return manager
+                .map(biomeErosionType -> biomeErosionType.getBiomeConfig(biome))
+                .map(config -> config.erosionType().value())
+                .orElse(ErosionType.NONE);
     }
 
     public static boolean canBeErosion(Block source) {
-        return BlockErosionEntryManager.getInstance()
+        return BlockErosionEntryStore.getInstance()
                 .map(manager -> manager.containsKey(source))
                 .orElse(false);
     }
 
     @Nullable
     public static CanBeErosionBlock<?, ?> getCanBeErosion(Block source, boolean hardCoding) {
-        return BlockErosionEntryManager.getInstance()
+        return BlockErosionEntryStore.getInstance()
                 .map(manager -> manager.get(source, hardCoding))
                 .orElse(null);
     }
 
     @Nullable
     public static CanBeErosionBlock<?, ?> getCanBeErosion(Block source, Level level, BlockPos pos, ErosionType type) {
-        return BlockErosionEntryManager.getInstance()
+        return BlockErosionEntryStore.getInstance()
                 .map(manager -> manager.get(source, level, pos, type))
                 .orElse(null);
+    }
+
+    private ErosionUtil() {
     }
 }

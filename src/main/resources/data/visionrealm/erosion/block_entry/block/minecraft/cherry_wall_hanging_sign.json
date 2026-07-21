@@ -1,9 +1,0 @@
-{
-  "block": "minecraft:cherry_wall_hanging_sign",
-  "entry": [
-    {
-      "type": "visionrealm:blood",
-      "target": "visionrealm:blood_corroded_cherry_wall_hanging_sign"
-    }
-  ]
-}

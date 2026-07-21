@@ -2,6 +2,7 @@ package io.github.jixingdefeng.visionrealm.core.entity.ai.goal;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,19 +11,30 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class ImprovedNearestAttackableTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
-    private final int updateInterval;
+    protected final float trackingRange;
+    protected final int updateInterval;
+    protected LivingEntity ignoreEntity;
     private int updateTimer = 0;
     private int trackTime = 0;
     private int ignoreTime = 0;
-    private LivingEntity ignoreEntity;
 
-    public ImprovedNearestAttackableTargetGoal(Mob mob, Class<T> targetType, boolean mustSee) {
-        this(mob, targetType, 10, 10, mustSee, false, null);
+    public ImprovedNearestAttackableTargetGoal(Mob mob, Class<T> targetType, float trackingRange, boolean mustSee) {
+        this(mob, targetType, 10, 10, trackingRange, mustSee, false, null);
     }
 
-    public ImprovedNearestAttackableTargetGoal(Mob mob, Class<T> targetType, int randomInterval, int updateInterval, boolean mustSee, boolean mustReach, @Nullable Predicate<LivingEntity> targetPredicate) {
+    public ImprovedNearestAttackableTargetGoal(
+            Mob mob,
+            Class<T> targetType,
+            int randomInterval,
+            int updateInterval,
+            float trackingRange,
+            boolean mustSee,
+            boolean mustReach,
+            @Nullable Predicate<LivingEntity> targetPredicate
+    ) {
         super(mob, targetType, randomInterval, mustSee, mustReach, targetPredicate);
         this.updateInterval = updateInterval;
+        this.trackingRange = trackingRange > 0 ? trackingRange : (float) mob.getAttributeValue(Attributes.FOLLOW_RANGE);
     }
 
     @Override
@@ -39,20 +51,24 @@ public class ImprovedNearestAttackableTargetGoal<T extends LivingEntity> extends
         }
     }
 
-    private void checkForBetterTarget() {
+    protected double trackingRangeSqr() {
+        return this.trackingRange * this.trackingRange;
+    }
+
+    protected void checkForBetterTarget() {
         LivingEntity currentTarget = this.mob.getTarget();
         if (currentTarget == null) {
             return;
         }
 
-        LivingEntity betterTarget = findBetterTarget();
+        LivingEntity betterTarget = this.findBetterTarget();
         if (betterTarget != null && betterTarget != currentTarget) {
             this.mob.setTarget(betterTarget);
             this.target = betterTarget;
         }
     }
 
-    private LivingEntity findBetterTarget() {
+    protected LivingEntity findBetterTarget() {
         List<T> targets = this.mob.level().getEntitiesOfClass(
                 this.targetType,
                 this.getTargetSearchArea(this.getFollowDistance()),
@@ -68,7 +84,7 @@ public class ImprovedNearestAttackableTargetGoal<T extends LivingEntity> extends
                 .orElse(null);
     }
 
-    private boolean isValidTarget(LivingEntity entity) {
+    protected boolean isValidTarget(LivingEntity entity) {
         if (entity == null || !entity.isAlive()) {
             return false;
         } else if (this.mustSee && !this.mob.getSensing().hasLineOfSight(entity)) {
@@ -80,22 +96,23 @@ public class ImprovedNearestAttackableTargetGoal<T extends LivingEntity> extends
         }
     }
 
-    private boolean ignoreTarget(LivingEntity entity) {
+    protected boolean ignoreTarget(LivingEntity entity) {
         if (entity == this.ignoreEntity) {
             return true;
-        } else if (entity != this.mob.getTarget()) {
-            return false;
         } else {
-            if (this.mob.distanceToSqr(entity) <= 3.0 * 3.0) {
-                if (!this.mob.isWithinMeleeAttackRange(entity)) {
-                    if (++this.trackTime >= 5) {
+            LivingEntity target = this.mob.getTarget();
+            if (entity == target) {
+                if (this.mob.isWithinMeleeAttackRange(entity) && this.mob.distanceToSqr(target) > this.trackingRangeSqr()) {
+                    this.trackTime = 0;
+                } else {
+                    if (this.trackTime >= 5) {
                         this.ignoreEntity = entity;
                         this.ignoreTime = this.trackTime;
                         this.trackTime = 0;
                         return true;
+                    } else {
+                        ++this.trackTime;
                     }
-                } else {
-                    this.trackTime = 0;
                 }
             }
 

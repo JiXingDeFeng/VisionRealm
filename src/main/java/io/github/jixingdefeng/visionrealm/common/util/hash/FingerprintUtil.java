@@ -9,7 +9,7 @@ import com.mojang.serialization.JsonOps;
 
 import java.util.*;
 
-public class FingerprintUtil {
+public final class FingerprintUtil {
 
     @SafeVarargs
     public static <T> String hashString(Codec<T> codec, T... objects) {
@@ -77,5 +77,8 @@ public class FingerprintUtil {
         }
 
         return result;
+    }
+
+    private FingerprintUtil() {
     }
 }

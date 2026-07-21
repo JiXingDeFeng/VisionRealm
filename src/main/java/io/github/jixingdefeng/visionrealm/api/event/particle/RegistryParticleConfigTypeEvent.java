@@ -2,7 +2,7 @@ package io.github.jixingdefeng.visionrealm.api.event.particle;
 
 import com.mojang.serialization.MapCodec;
 import io.github.jixingdefeng.visionrealm.api.particle.ParticleConfig;
-import io.github.jixingdefeng.visionrealm.common.particle.ParticleConfigLoader;
+import io.github.jixingdefeng.visionrealm.core.particle.config.ParticleConfigStore;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
 import net.neoforged.fml.event.IModBusEvent;
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author JiXingDeFeng
  * @see ParticleConfig
- * @see ParticleConfigLoader
+ * @see ParticleConfigStore
  * @since 0.0.1-dev
  */
 public class RegistryParticleConfigTypeEvent extends Event implements IModBusEvent {

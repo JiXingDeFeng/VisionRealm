@@ -1,8 +1,9 @@
 package io.github.jixingdefeng.visionrealm.core;
 
-import io.github.jixingdefeng.visionrealm.core.entity.Entities;
+import io.github.jixingdefeng.visionrealm.core.entity.ModEntities;
 import io.github.jixingdefeng.visionrealm.core.entity.renderer.AdministratorRenderer;
-import io.github.jixingdefeng.visionrealm.core.entity.renderer.TheForgottenRenderer;
+import io.github.jixingdefeng.visionrealm.core.entity.renderer.ForgottenShadowRenderer;
+import io.github.jixingdefeng.visionrealm.core.entity.renderer.NightmareApostleRenderer;
 import io.github.jixingdefeng.visionrealm.core.particle.BloodCorrodedCherryParticle;
 import io.github.jixingdefeng.visionrealm.core.particle.ErrorParticles;
 import io.github.jixingdefeng.visionrealm.core.particle.ModParticleTypes;
@@ -33,8 +34,9 @@ public class VisionRealmClient {
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         // 注册实体渲染器
-        EntityRenderers.register(Entities.ADMINISTRATOR.get(), AdministratorRenderer::new);
-        EntityRenderers.register(Entities.WANDERER.get(), TheForgottenRenderer::new);
+        EntityRenderers.register(ModEntities.ADMINISTRATOR.get(), AdministratorRenderer::new);
+        EntityRenderers.register(ModEntities.FORGOTTEN_SHADOW.get(), ForgottenShadowRenderer::new);
+        EntityRenderers.register(ModEntities.NIGHTMARE_APOSTLE.get(), NightmareApostleRenderer::new);
     }
 
     @SubscribeEvent

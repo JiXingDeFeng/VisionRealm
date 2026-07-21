@@ -2,6 +2,7 @@ package io.github.jixingdefeng.visionrealm.api.selector.game.position;
 
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
 import io.github.jixingdefeng.visionrealm.common.selector.StateSelection;
+import io.github.jixingdefeng.visionrealm.common.selector.SurfaceSelection;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -46,7 +47,7 @@ public interface PositionSelector extends TargetSelector<Vec3, PositionSelector>
      * @param surface {@code true} to enable surface-only selection, {@code false} to disable
      * @return The current selector instance for chaining
      */
-    PositionSelector surface(boolean surface);
+    PositionSelector surface(SurfaceSelection surface);
 
     /**
      * Restricts selection based on air state.

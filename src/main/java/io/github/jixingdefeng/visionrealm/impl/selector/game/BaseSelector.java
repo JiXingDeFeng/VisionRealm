@@ -2,12 +2,10 @@ package io.github.jixingdefeng.visionrealm.impl.selector.game;
 
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetCustomizer;
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
-import io.github.jixingdefeng.visionrealm.common.util.collector.CollectionUtils;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -19,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
@@ -65,7 +62,7 @@ import java.util.stream.Stream;
  * @author JiXingDeFeng
  * @since 0.0.2-dev
  */
-public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSelector<T, S> implements TargetSelector<T, S> {
+public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSelector<T, S> {
 
     public BaseSelector(Level level) {
         super(level);
@@ -106,38 +103,38 @@ public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSel
 
     @Override
     public int size() {
-        return this.executed ? this.cachedResults.size() : -1;
+        return this.isExecuted() ? this.cachedResults.size() : -1;
     }
 
     @Override
     public int count() {
-        this.execution();
+        this.ensureExecuted();
         return this.cachedResults.size();
     }
 
     @Override
     public Stream<T> stream() {
-        this.execution();
+        this.ensureExecuted();
         return this.cachedResults.stream();
     }
 
     @Override
     public List<T> toList() {
-        this.execution();
+        this.ensureExecuted();
         return new ArrayList<>(this.cachedResults);
     }
 
     @Override
     public T[] toArray(IntFunction<T[]> generator) {
-        this.execution();
+        this.ensureExecuted();
         return generator.apply(this.cachedResults.size());
     }
 
     @Override
-    public Optional<T> get(Function<Integer, Integer> generator) {
-        this.execution();
+    public Optional<T> get(IntFunction<Integer> generator) {
+        this.ensureExecuted();
         List<T> results = this.toList();
-        if (!CollectionUtils.isEmpty(results)) {
+        if (results != null && !results.isEmpty()) {
             return Optional.of(results.get(generator.apply(results.size())));
         } else {
             return Optional.empty();
@@ -146,14 +143,7 @@ public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSel
 
     @Override
     public Optional<T> get() {
-        this.execution();
-        List<T> results = this.toList();
-        if (!CollectionUtils.isEmpty(results)) {
-            RandomSource random = this.random != null ? this.random : RandomSource.create();
-            return Optional.of(results.get(random.nextInt(results.size())));
-        } else {
-            return Optional.empty();
-        }
+        return this.get(i -> 0);
     }
 
     @Override
@@ -164,24 +154,54 @@ public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSel
 
     @Override
     protected void execute() {
-        this.executed = true;
     }
 
-    protected void execution() {
-        if (!this.executed && this.level != null) {
-            this.execute();
+    /**
+     * Ensures the selector has been executed at least once, if a level is present.
+     * <p>
+     * If no level is available (e.g., selector not bound to a world), an error
+     * is logged and execution is skipped.
+     */
+    protected void ensureExecuted() {
+        if (!this.isExecuted()) {
+            if (this.level != null) {
+                this.execute();
+                this.markExecuted();
+            } else {
+                VisionRealm.LOGGER.error(
+                        "Cannot execute selector [{}] because it is not bound to a level. Ensure the selector was created with a valid Level or call copy(Level) to bind it.",
+                        this.toShortString()
+                );
+            }
         } else {
-            VisionRealm.LOGGER.error("");
+            VisionRealm.LOGGER.warn(
+                    "Selector [{}] has already been executed; returning cached results. Use copy(Level) if you need a fresh selection.",
+                    this.toShortString());
         }
     }
 
-    protected Registry<Biome> getBiomeRegistry(ServerLevel level) {
-        return level.getServer()
-                .registryAccess()
-                .registryOrThrow(Registries.BIOME);
+    /**
+     * Returns a short human-readable description of this selector for debugging.
+     * Subclasses may override to add type-specific details.
+     */
+    protected String toShortString() {
+        return String.format("%s{limit=%d, filters=%d}", getClass().getSimpleName(), this.limit, this.filters.size());
     }
 
-    protected List<Biome> getAllowBiomes(ServerLevel level, Snapshot<T> snapshot) {
+    protected Registry<Biome> getBiomeRegistry(Level level) {
+        return level.registryAccess().registryOrThrow(Registries.BIOME);
+    }
+
+    /**
+     * Computes the list of biomes that pass the snapshot's allow/deny rules.
+     * <p>
+     * A biome is included if it is:
+     * <ul>
+     *   <li>not in the deny list,</li>
+     *   <li>and either the allow list is empty or the biome is in the allow list.</li>
+     * </ul>
+     */
+    protected List<Biome> getAllowBiomes(Level level, Snapshot<T> snapshot) {
         Registry<Biome> biomeRegistry = getBiomeRegistry(level);
         List<ResourceKey<? extends Biome>> allowKeys = new ArrayList<>(snapshot.allowBiomes);
         List<ResourceKey<? extends Biome>> denyKeys = new ArrayList<>(snapshot.denyBiomes);
@@ -194,16 +214,51 @@ public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSel
                 .toList();
     }
 
+    /**
+     * Offsets the given bounding box by the specified reference center.
+     * <p>
+     * If {@code boxRange} is {@code null}, this method returns {@code null}.
+     * If {@code referenceCenter} is {@code null}, the original {@code boxRange}
+     * is returned unchanged. Otherwise, a new {@code AABB} with both corners
+     * translated by {@code referenceCenter} is created and returned.
+     *
+     * @param referenceCenter the offset to apply, may be {@code null}
+     * @param boxRange        the bounding box to offset, may be {@code null}
+     * @return the offset bounding box, or {@code null} if {@code boxRange} was {@code null}
+     */
     @Nullable
-    protected AABB getOffsetResult(@Nullable Vec3 referenceCenter, AABB boundingBox) {
-        if (boundingBox == null) {
+    protected AABB offset(@Nullable Vec3 referenceCenter, AABB boxRange) {
+        if (boxRange == null) {
             return null;
         } else if (referenceCenter == null) {
-            return boundingBox;
+            return boxRange;
         } else {
-            Vec3 max = boundingBox.getMaxPosition();
-            Vec3 min = boundingBox.getMinPosition();
+            Vec3 max = boxRange.getMaxPosition();
+            Vec3 min = boxRange.getMinPosition();
             return new AABB(min.add(referenceCenter), max.add(referenceCenter));
+        }
+    }
+
+    /**
+     * Offsets the given {@link SphereRange} by the specified reference center.
+     * <p>
+     * If {@code sphereRange} is {@code null}, this method returns {@code null}.
+     * If {@code referenceCenter} is {@code null}, the original {@code sphereRange}
+     * is returned unchanged. Otherwise, a new {@code SphereRange} with the center
+     * translated by {@code referenceCenter} is created and returned.
+     *
+     * @param referenceCenter the offset to apply to the sphere's center, may be {@code null}
+     * @param sphereRange     the spherical region to offset, may be {@code null}
+     * @return the offset sphere range, or {@code null} if {@code sphereRange} was {@code null}
+     */
+    @Nullable
+    protected SphereRange offset(@Nullable Vec3 referenceCenter, SphereRange sphereRange) {
+        if (sphereRange == null) {
+            return null;
+        } else if (referenceCenter == null) {
+            return sphereRange;
+        } else {
+            return sphereRange.offset(referenceCenter);
         }
     }
 
@@ -211,9 +266,14 @@ public class BaseSelector<T, S extends TargetSelector<T, S>> extends AbstractSel
         return selector.apply(this, this.level);
     }
 
+    /**
+     * Deep‑copies mutable state (filters, snapshots) from another BaseSelector.
+     * <p>
+     * Called by copy constructors to transfer configuration.
+     */
     protected void copyFrom(BaseSelector<T, S> source) {
         super.copyFrom(source);
         this.filters = source.filters;
-        this.snapshotDeque = source.snapshotDeque;
+        this.snapshot = source.snapshot;
     }
 }

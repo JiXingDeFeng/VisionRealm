@@ -9,14 +9,45 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A random stroll goal that avoids (or seeks) areas based on light level.
+ * <p>
+ * The mob will attempt to find a random destination within a search radius that satisfies
+ * the configured light condition (either above or below a threshold). If no such position is
+ * found after a limited number of attempts, the best candidate found is returned, or falls back
+ * to the default random stroll behavior.
+ */
 public class LightAwareStrollGoal extends RandomStrollGoal {
-    private final int lightThreshold;
-    private final int maxSearchAttempts;
-    private final boolean darknessAvoidance;
-    private final boolean considerSkyLight;
+    protected final int lightThreshold;
+    protected final int maxSearchAttempts;
+    protected final int radius;
+    protected final int verticalRange;
+    protected final boolean darknessAvoidance;
+    protected final boolean considerSkyLight;
+    protected final boolean considerBlockLight;
+    protected final boolean allowSuboptimal;
 
-    public LightAwareStrollGoal(PathfinderMob mob, double speedModifier, int lightThreshold, boolean darknessAvoidance, boolean considerSkyLight) {
-        this(mob, speedModifier, lightThreshold, 30, darknessAvoidance, considerSkyLight);
+    public LightAwareStrollGoal(
+            PathfinderMob mob,
+            double speedModifier,
+            int lightThreshold,
+            boolean darknessAvoidance,
+            boolean allowSuboptimal
+    ) {
+        this(mob, speedModifier, lightThreshold, darknessAvoidance, allowSuboptimal, true, true);
+    }
+
+    public LightAwareStrollGoal(
+            PathfinderMob mob,
+            double speedModifier,
+            int lightThreshold,
+            boolean darknessAvoidance,
+            boolean allowSuboptimal,
+            boolean considerSkyLight,
+            boolean considerBlockLight
+    ) {
+        this(mob, speedModifier, lightThreshold, 30, 50, 10,
+                darknessAvoidance, allowSuboptimal, considerSkyLight, considerBlockLight);
     }
 
     public LightAwareStrollGoal(
@@ -24,56 +55,75 @@ public class LightAwareStrollGoal extends RandomStrollGoal {
             double speedModifier,
             int lightThreshold,
             int maxSearchAttempts,
+            int radius,
+            int verticalRange,
             boolean darknessAvoidance,
-            boolean considerSkyLight
+            boolean allowSuboptimal,
+            boolean considerSkyLight,
+            boolean considerBlockLight
     ) {
         super(mob, speedModifier);
         this.lightThreshold = lightThreshold;
-        this.maxSearchAttempts = maxSearchAttempts;
+        this.maxSearchAttempts = Math.max(1, maxSearchAttempts);
+        this.radius = radius;
+        this.verticalRange = verticalRange;
         this.darknessAvoidance = darknessAvoidance;
+        this.allowSuboptimal = allowSuboptimal;
         this.considerSkyLight = considerSkyLight;
+        this.considerBlockLight = considerBlockLight;
     }
 
+    /**
+     * Attempts to find a random position that meets the light condition.
+     * <p>
+     * Up to {@link #maxSearchAttempts} random positions are generated within the search radius.
+     * The first position that fully satisfies the light condition is returned immediately.
+     * <p>
+     * If no fully compliant position is found, the best available fallback is returned,
+     * This ensures that even when no perfect position exists, the entity will move toward
+     * the most favorable light conditions available.
+     * <p>
+     * Fallback behavior can be disabled by setting {@link #allowSuboptimal} to {@code false},
+     * in which case this method returns {@code null} if no compliant position is found.
+     *
+     * @return a suitable target position, or {@code null} if no acceptable position was found
+     *         (either because none exist or fallback is disabled)
+     */
     @Nullable
     @Override
     protected Vec3 getPosition() {
         Level level = this.mob.level();
-        if (this.shouldEvadeBasedOnLight(level.getMaxLocalRawBrightness(this.mob.blockPosition()))) {
-            Vec3 candidatePos;
-            Vec3 position = null;
-            int brightness = this.darknessAvoidance ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-            for (int i = 0; i < this.maxSearchAttempts; i++) {
-                candidatePos = LandRandomPos.getPos(this.mob, 50, 10);
-                if (candidatePos != null) {
-                    int brightness2 = BlockPosUtil.getLightLevel(level, BlockPos.containing(candidatePos), this.considerSkyLight);
-                    if (!this.shouldEvadeBasedOnLight(brightness2)) {
-                        return candidatePos;
-                    } else if (this.isBetterLightValue(brightness2, brightness) && this.isValidPosition(candidatePos)) {
-                        position = candidatePos;
-                        brightness = brightness2;
-                    }
+        Vec3 suboptimal = null;
+        int brightness = this.darknessAvoidance ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        for (int i = 0; i < this.maxSearchAttempts; i++) {
+            Vec3 candidatePos = LandRandomPos.getPos(this.mob, this.radius, this.verticalRange);
+            if (candidatePos != null) {
+                int brightness2 = this.getBrightness(level, BlockPos.containing(candidatePos));
+                if (!this.shouldEvadeBasedOnLight(brightness2)) {
+                    return candidatePos;
+                } else if (this.allowSuboptimal && this.isBetterLight(brightness2, brightness)) {
+                    suboptimal = candidatePos;
+                    brightness = brightness2;
                 }
             }
-
-            return position;
         }
 
-        return super.getPosition();
+        return suboptimal;
     }
 
-    public boolean shouldEvadeBasedOnLight(int brightness) {
+    protected int getBrightness(Level level, BlockPos pos) {
+        return BlockPosUtil.getLightLevel(level, pos, this.considerBlockLight, this.considerSkyLight);
+    }
+
+    protected boolean shouldEvadeBasedOnLight(int brightness) {
         return this.darknessAvoidance ? brightness <= this.lightThreshold : brightness >= this.lightThreshold;
     }
 
-    protected boolean isBetterLightValue(int candidate, int currentBest) {
+    protected boolean isBetterLight(int candidate, int currentBest) {
         if (this.darknessAvoidance) {
             return candidate > currentBest;
         } else {
             return candidate < currentBest;
         }
-    }
-
-    protected boolean isValidPosition(Vec3 position) {
-        return true;
     }
 }

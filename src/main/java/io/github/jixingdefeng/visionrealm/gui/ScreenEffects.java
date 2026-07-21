@@ -26,19 +26,14 @@ public class ScreenEffects {
     public static final ResourceLocation BACKGROUND_FILTER = ResourceLocation.fromNamespaceAndPath(VisionRealm.MOD_ID, "textures/gui/screen_filter/background_filter.png");
     public static final Minecraft minecraft = Minecraft.getInstance();
     private static final RandomSource random = RandomSource.create();
-    private static final int BINARY_TEXT_LENGTH = 8;
+    private static final int BINARY_TEXT_LENGTH = 16;
     private static final int BACKGROUND_FILTER_BLIT_OFFSET = -50;
     private static final int NOISE_FILTER_BLIT_OFFSET = -50;
     private static final int BINARY_TEXT_BLIT_OFFSET = 500;
-    private static final int RECTANGULAR_BLIT_OFFSET = 500;
     private static final int BINARY_TEXT_BASE_COLOR = 0xFF0000;
-    private static final int[] RECTANGULAR_BASE_COLORS = {
-            0x0000FF, 0x00FF00, 0x00FFFF, 0xFF00FF, 0xFFFF00, 0xFF0000
-    };
     private static final float BACKGROUND_FILTER_ALPHA_BASE_VALUE = 0.95F;
     private static final float NOISE_FILTERS_ALPHA_BASE_VALUE = 0.25F;
     private static final float BINARY_TEXT_ALPHA_BASE_VALUE = 0.12F;
-    private static final float RECTANGULAR_ALPHA_BASE_VALUE = 0.02F;
 
     public static void render(RenderGuiEvent event) {
         GuiGraphics guiGraphics = event.getGuiGraphics();
@@ -48,14 +43,14 @@ public class ScreenEffects {
             int screenWidth = minecraft.getWindow().getGuiScaledWidth();
             int screenHeight = minecraft.getWindow().getGuiScaledHeight();
 
-            ScreenEffects.renderScreenFilters(guiGraphics, screenWidth, screenHeight);
-            ScreenEffects.renderScreenParticles(guiGraphics, screenWidth, screenHeight);
+            if (Config.ENABLE_SCREEN_OVERLAY.get()) {
+                ScreenEffects.renderScreenFilters(guiGraphics, screenWidth, screenHeight);
+            }
         }
     }
 
     private static boolean display(Player player) {
-        return Config.ENABLE_SCREEN_OVERLAY.get()
-                && player != null
+        return player != null
                 && !player.isSpectator()
                 && !minecraft.options.hideGui;
     }
@@ -70,7 +65,7 @@ public class ScreenEffects {
             RenderSystem.defaultBlendFunc();
             RenderSystem.enableDepthTest();
 
-            float opacity = 0.01F * Config.SCREEN_OVERLAY_OPACITY.get();
+            float opacity = 0.0175F * Config.SCREEN_OVERLAY_OPACITY.get();
 
             guiGraphics.pose().pushPose();
             guiGraphics.setColor(1.0F, 1.0F, 1.0F, BACKGROUND_FILTER_ALPHA_BASE_VALUE * opacity);
@@ -105,33 +100,6 @@ public class ScreenEffects {
             guiGraphics.pose().popPose();
             RenderSystem.disableDepthTest();
             RenderSystem.disableBlend();
-        }
-    }
-
-    private static void renderScreenParticles(GuiGraphics guiGraphics, int screenWidth, int screenHeight) {
-        int count = random.nextInt(5, 15);
-        for (int i = 0; i < count; i++) {
-            boolean bl = random.nextBoolean();
-            int x = random.nextInt(screenWidth + 50) - 50;
-            int y = random.nextInt(screenHeight);
-            float opacity = 0.01F * Config.SCREEN_OVERLAY_OPACITY.get();
-            float alpha = (bl ? BINARY_TEXT_ALPHA_BASE_VALUE : RECTANGULAR_ALPHA_BASE_VALUE) * opacity;
-            if (bl) {
-                StringBuilder text = new StringBuilder(Integer.toString(random.nextInt((int) Math.pow(2, BINARY_TEXT_LENGTH)), 2));
-                if (text.length() < BINARY_TEXT_LENGTH) {
-                    int zeros = BINARY_TEXT_LENGTH - text.length();
-                    text.insert(0, "0".repeat(Math.max(0, zeros)));
-                }
-
-                int color = ((int) (alpha * 255) << 24) | BINARY_TEXT_BASE_COLOR;
-                guiGraphics.pose().translate(0, 0, BINARY_TEXT_BLIT_OFFSET);
-                guiGraphics.drawString(minecraft.fontFilterFishy, text.toString(), x, y, color);
-                guiGraphics.pose().translate(0, 0, 0);
-            } else {
-                int baseColor = RECTANGULAR_BASE_COLORS[random.nextInt(RECTANGULAR_BASE_COLORS.length)];
-                int color = ((int) (alpha * 255) << 24) | baseColor;
-                guiGraphics.fill(x, y, x + 100, y + 10, RECTANGULAR_BLIT_OFFSET, color);
-            }
         }
     }
 }

@@ -2,15 +2,14 @@ package io.github.jixingdefeng.visionrealm.core.incident;
 
 import io.github.jixingdefeng.visionrealm.api.incident.RegisteredIncident;
 import io.github.jixingdefeng.visionrealm.common.util.random.ArrayWeightRandomList;
-import io.github.jixingdefeng.visionrealm.core.registry.ModRegistryKeys;
+import io.github.jixingdefeng.visionrealm.core.VisionRealm;
+import io.github.jixingdefeng.visionrealm.core.registry.ModRegistries;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -18,34 +17,30 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public class IncidentHandler {
     private volatile static IncidentHandler INSTANCE;
     @NotNull private RandomSource random = RandomSource.create();
     @NotNull private IntProvider intervalProvider;
-    private ArrayWeightRandomList<RegisteredIncident<?, ?>> incidents;
-    private long registryVersion;
+    private volatile ArrayWeightRandomList<RegisteredIncident<?, ?>> incidents;
     private int currentInterval;
     private boolean closed = false;
 
-    public static IncidentHandler getInstance() {
-        return INSTANCE;
+    public static Optional<IncidentHandler> getInstance() {
+        return Optional.ofNullable(INSTANCE);
     }
 
-    public static IncidentHandler create(@Nullable IntProvider intervalProvider) {
-        IncidentHandler handler = new IncidentHandler();
-        if (intervalProvider != null) {
-            handler.setCurrentInterval(intervalProvider);
-        }
-
-        return handler;
+    public static void start(@Nullable IntProvider intProvider) {
+        IncidentHandler handler = new IncidentHandler(intProvider);
+        replaceInstance(handler);
     }
 
     @SubscribeEvent
     public static void onServerTickEvent(ServerTickEvent.Pre event) {
         if (event.hasTime()) {
-            IncidentHandler.getInstance().tick(event.getServer());
+            IncidentHandler.getInstance().ifPresent(handler -> handler.tick(event.getServer()));
         }
     }
 
@@ -62,17 +57,14 @@ public class IncidentHandler {
         INSTANCE = handler;
     }
 
-    private IncidentHandler() {
-        this.intervalProvider = UniformInt.of(10000, 20000);
+    protected IncidentHandler(@Nullable IntProvider intProvider) {
+        this.intervalProvider = intProvider != null ? intProvider : UniformInt.of(10000, 20000);
         this.currentInterval = intervalProvider.sample(this.random);
     }
 
-    public void open() {
-        replaceInstance(this);
-    }
-
-    public void setCurrentInterval(@NotNull IntProvider currentInterval) {
-        this.intervalProvider = currentInterval;
+    public void setInterval(@NotNull IntProvider intProvider) {
+        this.intervalProvider = intProvider;
+        this.resetInterval();
     }
 
     public void setRandom(@NotNull RandomSource random) {
@@ -81,76 +73,73 @@ public class IncidentHandler {
 
     public boolean executeImmediately(ServerLevel level) {
         if (!this.closed) {
-            if (this.execute(level)) {
-                this.resetInterval();
-                return true;
-            }
+            this.resetInterval();
+            return this.execute(level);
+        } else {
+            return false;
         }
-
-        return false;
     }
 
-    private void close() {
+    protected void close() {
         this.closed = true;
+        this.incidents = null;
     }
 
-    private void resetInterval() {
+    protected void resetInterval() {
         this.currentInterval = this.intervalProvider.sample(this.random);
     }
 
-    private void tick(MinecraftServer server) {
+    protected void tick(MinecraftServer server) {
         if (!this.closed) {
             if (this.currentInterval <= 0) {
-                if (this.execute(server)) {
-                    this.resetInterval();
-                }
+                this.execute(server);
+                this.resetInterval();
             } else {
                 --this.currentInterval;
             }
         }
     }
 
-    private boolean execute(MinecraftServer server) {
+    protected boolean execute(MinecraftServer server) {
         Optional<RegisteredIncident<?, ?>> registeredIncident = this.randomIncident(server);
         if (registeredIncident.isPresent()) {
             RegisteredIncident<?, ?> incident = registeredIncident.get();
-            Collection<ResourceKey<Level>> dimensions = incident.getTargetSelector().getDimension();
-            List<ServerLevel> levelList = new ArrayList<>();
-            for (ResourceKey<Level> dimension : dimensions) {
-                levelList.add(server.getLevel(dimension));
-            }
-
-            return this.execute(incident, levelList);
+            return incident.execute(server, this.random);
         } else {
             return false;
         }
     }
 
-    private boolean execute(ServerLevel serverLevel) {
-        Optional<RegisteredIncident<?, ?>> incident = this.randomIncident(serverLevel.getServer());
-        return incident.filter(registeredIncident -> this.execute(registeredIncident, Collections.singletonList(serverLevel))).isPresent();
+    protected boolean execute(ServerLevel serverLevel) {
+        Optional<RegisteredIncident<?, ?>> optional = this.randomIncident(serverLevel.getServer());
+        return optional.filter(incident -> incident.execute(serverLevel, serverLevel.getRandom()))
+                .isPresent();
     }
 
-    private boolean execute(RegisteredIncident<?, ?> incident, Collection<ServerLevel> serverLevel) {
-        boolean result = true;
-        for (ServerLevel level : serverLevel) {
-            result = incident.execute(level, this.random);
-        }
-
-        return result;
-    }
-
-    private Optional<RegisteredIncident<?, ?>> randomIncident(MinecraftServer server) {
-        if (this.incidents == null) {
-            Optional<Registry<RegisteredIncident<?, ?>>> registry = server.registryAccess()
-                    .registry(ModRegistryKeys.INCIDENT);
-            if (registry.isPresent()) {
-                this.incidents = ArrayWeightRandomList.create(registry.get().stream().toList());
-            } else {
-                return Optional.empty();
+    protected Optional<RegisteredIncident<?, ?>> randomIncident(MinecraftServer server) {
+        if (this.closed) {
+            return Optional.empty();
+        } else {
+            if (this.incidents == null) {
+                Optional<Registry<RegisteredIncident<?, ?>>> registry = server.registryAccess()
+                        .registry(ModRegistries.INCIDENT);
+                if (registry.isEmpty()) {
+                    VisionRealm.LOGGER.error("Incident registry not found. Ensure the registry '{}' is properly loaded.", ModRegistries.INCIDENT.location());
+                    return Optional.empty();
+                } else {
+                    List<RegisteredIncident<?, ?>> incidentList = registry.get().stream().toList();
+                    if (incidentList.isEmpty()) {
+                        VisionRealm.LOGGER.warn("No incidents registered in the incident registry. Incident handler has been disabled.");
+                        this.closed = true;
+                        return Optional.empty();
+                    } else {
+                        this.incidents = ArrayWeightRandomList.create(incidentList);
+                        VisionRealm.LOGGER.debug("Initialized weighted random selection pool with {} incidents.", incidentList.size());
+                    }
+                }
             }
-        }
 
-        return this.incidents.getRandom(this.random);
+            return this.incidents.getRandom(this.random);
+        }
     }
 }

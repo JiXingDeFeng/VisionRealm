@@ -14,7 +14,8 @@ public class PlayerAttributeMixin {
     @Inject(method = "createAttributes", at = @At("TAIL"), cancellable = true)
     private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.setReturnValue(cir.getReturnValue()
-                .add(ModAttributes.SANITY)
+                .add(ModAttributes.PLAYER_SANITY)
+                .add(ModAttributes.PLAYER_SPIRIT_EROSION)
         );
     }
 }

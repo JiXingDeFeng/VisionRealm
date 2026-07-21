@@ -1,66 +1,49 @@
 package io.github.jixingdefeng.visionrealm.core.erosion;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import io.github.jixingdefeng.visionrealm.core.VisionRealm;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.jixingdefeng.visionrealm.common.util.serialization.Codecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 public class ErosionType {
-    public static final Codec<ErosionType> CODEC = ResourceLocation.CODEC
-            .flatXmap(
-                    resourceLocation -> {
-                        ErosionType type = ErosionType.get(resourceLocation);
-                        return type != null
-                                ? DataResult.success(type)
-                                : DataResult.error(() -> "Unknown erosion type: " + resourceLocation);
-                    },
-                    erosionType -> DataResult.success(erosionType.getName())
-            );
-    private static final Map<ResourceLocation, ErosionType> TYPES = new HashMap<>();
-    private final ResourceLocation name;
+    public static final ErosionType NONE = new ErosionType("none", false, false);
+    public static final Codec<ErosionType> CODEC = Codec.xor(
+            RecordCodecBuilder.<ErosionType>create(instance ->
+                    instance.group(
+                            Codec.STRING.fieldOf("name").forGetter(ErosionType::getName),
+                            Codec.BOOL.fieldOf("block").forGetter(ErosionType::block),
+                            Codec.BOOL.fieldOf("entity").forGetter(ErosionType::entity)
+                    ).apply(instance, ErosionType::new)
+            ),
+            Codecs.EMPTY_OBJECT
+    ).xmap(
+            either -> either.map(
+                    type -> type,
+                    type -> NONE
+            ),
+            Either::left
+    );
+    private final String name;
     private final boolean block;
     private final boolean entity;
 
-    public static final ErosionType NONE = create("none", true, true);
-    public static final ErosionType BLOOD = create("blood", true, false);
-    public static final ErosionType CURSE = create("curse", true, true);
-    public static final ErosionType DREAD = create("dread", false, true);
-
-    protected ErosionType(ResourceLocation name, boolean block, boolean entity) {
+    protected ErosionType(String name, boolean block, boolean entity) {
         this.name = name;
         this.block = block;
         this.entity = entity;
     }
 
-    public static ErosionType create(ResourceLocation name, boolean general) {
-        return create(name, general, general);
-    }
-
-    public static ErosionType create(ResourceLocation name, boolean block, boolean entity) {
-        return register(new ErosionType(name, block, entity));
-    }
-
-    public static ErosionType register(ErosionType type) {
-        TYPES.put(type.name, type);
-        return type;
-    }
-
-    private static ErosionType create(String name, boolean block, boolean entity) {
-        return create(ResourceLocation.fromNamespaceAndPath(VisionRealm.MOD_ID, name), block, entity);
-    }
-
-    public static ErosionType get(ResourceLocation name) {
-        return TYPES.get(name);
-    }
-
-    public ResourceLocation getName() {
+    public String getName() {
         return this.name;
+    }
+
+    public boolean none() {
+        return this.equals(NONE);
     }
 
     public boolean block() {
@@ -91,6 +74,21 @@ public class ErosionType {
 
     @Override
     public String toString() {
-        return "ErosionType[" + this.name + ", " + this.block + ", " + this.entity + "]";
+        if (this == NONE) return "ErosionType.NONE";
+        return "ErosionType[name=" + this.name + ", block=" + this.block + ", entity=" + this.entity + "]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        return obj instanceof ErosionType type
+                && this.name.equals(type.name)
+                && this.block == type.block
+                && this.entity == type.entity;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name, this.block, this.entity);
     }
 }

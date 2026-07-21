@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.Collection;
 
-public class BlockStateHelper {
+public final class BlockStateHelper {
 
     public static BlockState copyProperties(BlockState source, BlockState target) {
         return copyProperties(source, target, source.getProperties());
@@ -26,5 +26,8 @@ public class BlockStateHelper {
         }
 
         return target;
+    }
+
+    private BlockStateHelper() {
     }
 }

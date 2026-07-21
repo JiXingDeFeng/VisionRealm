@@ -2,10 +2,9 @@ package io.github.jixingdefeng.visionrealm.api.selector.game.block;
 
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
 import io.github.jixingdefeng.visionrealm.common.selector.StateSelection;
+import io.github.jixingdefeng.visionrealm.common.selector.SurfaceSelection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
-
-import java.util.Collection;
 
 /**
  * A selector for retrieving block states from the world.
@@ -34,25 +33,32 @@ public interface BlockSelector extends TargetSelector<BlockPos, BlockSelector> {
 
     /**
      * Allows only blocks of the specified types.
-     * <p>This is a setter operation. Pass an empty collection to clear the filter.
+     * <p>This is a setter operation. Calling with no arguments clears the filter.
      * Multiple calls will overwrite the previous value.</p>
      *
-     * @param blocks The collection of allowed block types (must not be {@code null})
+     * <p><strong>Note:</strong> Only blocks that are in the whitelist AND NOT in the
+     * blacklist will be selected. If the whitelist is empty, any block not in the
+     * blacklist is allowed.</p>
+     *
+     * @param blocks The block types to allow (optional)
      * @return The current selector instance for chaining
-     * @throws NullPointerException if {@code blocks} is {@code null}
      */
-    BlockSelector allowBlocks(Collection<Block> blocks);
+    BlockSelector allowBlocks(Block... blocks);
 
     /**
      * Excludes blocks of the specified types.
-     * <p>This is a setter operation. Pass an empty collection to clear the filter.
+     * <p>This is a setter operation. Calling with no arguments clears the filter.
      * Multiple calls will overwrite the previous value.</p>
      *
-     * @param blocks The collection of excluded block types (must not be {@code null})
+     * <p><strong>Note:</strong> Blocks in the blacklist are excluded. If a whitelist
+     * is also set, blocks must be in the whitelist AND NOT in the blacklist to be
+     * allowed. If only the blacklist is set, all blocks except those in the blacklist
+     * are allowed.</p>
+     *
+     * @param blocks The block types to deny (optional)
      * @return The current selector instance for chaining
-     * @throws NullPointerException if {@code blocks} is {@code null}
      */
-    BlockSelector denyBlocks(Collection<Block> blocks);
+    BlockSelector denyBlocks(Block... blocks);
 
     /**
      * Selects only positions that are on the surface (topmost non-air block).
@@ -62,7 +68,7 @@ public interface BlockSelector extends TargetSelector<BlockPos, BlockSelector> {
      * @param surface {@code true} to enable surface-only selection, {@code false} to disable
      * @return The current selector instance for chaining
      */
-    BlockSelector surface(boolean surface);
+    BlockSelector surface(SurfaceSelection surface);
 
     /**
      * Restricts selection based on air state.

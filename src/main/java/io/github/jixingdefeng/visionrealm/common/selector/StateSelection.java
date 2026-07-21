@@ -2,18 +2,18 @@ package io.github.jixingdefeng.visionrealm.common.selector;
 
 import java.util.function.BooleanSupplier;
 
+/**
+ * Defines how a target state condition is evaluated: unrestricted, match only, or match not.
+ *
+ * @author JiXingDeFeng
+ * @since 0.0.2-dev
+ */
 public enum StateSelection {
-    /**
-     * No restriction
-     */
+    /** No restriction */
     ANY,
-    /**
-     * Only match the specific state
-     */
+    /** Only match the specific state */
     ONLY,
-    /**
-     * Only not match the specific state
-     */
+    /** Only not match the specific state */
     NOT;
 
     public boolean test(BooleanSupplier value) {

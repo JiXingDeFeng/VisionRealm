@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.api.event.erosion.block;
 
-import io.github.jixingdefeng.visionrealm.api.erosion.infection.CanBeErosion;
+import io.github.jixingdefeng.visionrealm.api.erosion.block.CanBeErosionBlock;
 import io.github.jixingdefeng.visionrealm.api.event.erosion.ErosionEvent;
 import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
 import net.minecraft.core.BlockPos;
@@ -14,33 +14,57 @@ import net.neoforged.bus.api.ICancellableEvent;
  * <p>
  * This event family tracks the complete lifecycle of block erosion, from pre-erosion
  * checks to post-erosion results. It extends {@link ErosionEvent} with block-specific
- * context, using {@link BlockPos} instead of {@link Vec3} for position handling.
+ * context, including the erosion type and the transformation target.
  * </p>
  *
  * <p><b>Important:</b> This event is only fired when a block is being transformed
- * due to erosion (e.g., when erosion conditions are met), not during the gradual
- * accumulation of erosion effects.</p>
+ * due to erosion.</p>
  *
  * @param <T> The type of erosion result (can be any type representing the erosion outcome)
- *
  * @author JiXingDeFeng
  * @see ErosionEvent
  * @see ErosionType
  * @since 0.0.1-dev
  */
-public abstract class BlockErosionEvent<T> extends ErosionEvent<Block, T> {
+public abstract class BlockErosionEvent<T> extends ErosionEvent<Block> {
+    private final ErosionType type;
+    protected T target;
 
     /**
      * Creates a new block erosion event.
      *
-     * @param source   The block being eroded
-     * @param target   The erosion result (what it transforms into)
-     * @param level    The world where erosion occurs
-     * @param pos      The exact position of erosion (as Vec3 for precision)
-     * @param type     The type of erosion causing the transformation
+     * @param source The block being eroded
+     * @param target The erosion result (what it transforms into)
+     * @param level  The world where erosion occurs
+     * @param pos    The position of the block
+     * @param type   The type of erosion causing the transformation
      */
     protected BlockErosionEvent(Block source, T target, Level level, BlockPos pos, ErosionType type) {
-        super(source, target, level, Vec3.atLowerCornerOf(pos), type);
+        super(source, level, Vec3.atLowerCornerOf(pos));
+        this.type = type;
+        this.target = target;
+    }
+
+    /**
+     * Returns the current erosion result.
+     * <p>
+     * For {@code Pre} events, this may be modified via {@code setResult}.
+     * For {@code Post} events, this is the final result after transformation.
+     * </p>
+     *
+     * @return The erosion result (what the source transforms into)
+     */
+    public T getTarget() {
+        return this.target;
+    }
+
+    /**
+     * Returns the type of erosion being applied.
+     *
+     * @return The erosion type
+     */
+    public ErosionType getType() {
+        return this.type;
     }
 
     /**
@@ -64,7 +88,7 @@ public abstract class BlockErosionEvent<T> extends ErosionEvent<Block, T> {
          * Creates a new pre-transformation event.
          *
          * @param source  The block about to transform
-         * @param target The initial transformation result from {@link CanBeErosion#afterErosion}
+         * @param target The initial transformation result from {@link CanBeErosionBlock#afterErosion}
          *                (what the block will transform into)
          * @param level   The world
          * @param pos     The block position
@@ -113,7 +137,7 @@ public abstract class BlockErosionEvent<T> extends ErosionEvent<Block, T> {
          * Creates a new post-transformation event.
          *
          * @param source  The original block before transformation
-         * @param target What the block transformed into (the result from {@link CanBeErosion#transformed})
+         * @param target What the block transformed into (the result from {@link CanBeErosionBlock#transformed})
          * @param level   The world
          * @param pos     The block position where transformation occurred
          * @param type    The erosion type that caused the transformation

@@ -17,11 +17,6 @@ import net.minecraft.core.BlockPos;
  */
 public interface BlockIncident extends Incident<BlockPos> {
 
-    @Override
-    default boolean execute(IncidentContext<BlockPos> context) {
-        return this.execute(BlockIncidentContext.of(context));
-    }
-
     /**
      * Executes the incident with a block-specific context.
      *
@@ -29,4 +24,9 @@ public interface BlockIncident extends Incident<BlockPos> {
      * @return {@code true} if the incident executed successfully, {@code false} otherwise
      */
     boolean execute(BlockIncidentContext context);
+
+    @Override
+    default boolean execute(IncidentContext<BlockPos> context) {
+        return this.execute(BlockIncidentContext.of(context));
+    }
 }

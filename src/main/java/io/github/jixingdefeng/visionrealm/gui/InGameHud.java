@@ -1,6 +1,5 @@
 package io.github.jixingdefeng.visionrealm.gui;
 
-import io.github.jixingdefeng.visionrealm.api.controller.entity.EntityErosionController;
 import io.github.jixingdefeng.visionrealm.core.Config;
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import io.github.jixingdefeng.visionrealm.core.entity.ai.attributes.ModAttributes;
@@ -27,49 +26,41 @@ public class InGameHud {
     public static void render(RenderGuiLayerEvent event) {
         GuiGraphics guiGraphics = event.getGuiGraphics();
         Player player = getCameraEntity();
-        if (display(player)) {
+        if (display(player, true)) {
             renderErosionHud(guiGraphics, player);
             renderSaneHud(guiGraphics, player);
         }
     }
 
-    private static boolean display(Player player) {
-        return player != null && !(player.isCreative() || player.isSpectator()) && !minecraft.options.hideGui;
+    private static boolean display(Player player, boolean survival) {
+        return player != null
+                && !minecraft.options.hideGui
+                && (!survival || !player.isCreative() && !player.isSpectator());
     }
 
     private static void renderSaneHud(GuiGraphics guiGraphics, Player player) {
-        HudType type = Config.HUD_TYPE.get();
-        if (type != HudType.ModernizeHud) {
-            double saneValue = player.getAttributeValue(ModAttributes.SANITY);
-            if (type == HudType.Default) {
-                defaultSaneHud(guiGraphics, saneValue, Config.HUD_SHOW_VALUES.get());
-            }
-        }
+        double saneValue = player.getAttributeValue(ModAttributes.PLAYER_SANITY);
+        iconSaneHud(guiGraphics, saneValue, Config.HUD_SHOW_VALUES.get());
     }
 
     private static void renderErosionHud(GuiGraphics guiGraphics, Player player) {
-        HudType type = Config.HUD_TYPE.get();
-        if (type != HudType.ModernizeHud) {
-            double erosion = ((EntityErosionController) player).getMaxErosionProgress() / 10000.0;
-            if (type == HudType.Default) {
-                defaultErosionHud(guiGraphics, player, erosion, Config.HUD_SHOW_VALUES.get());
-            }
-        }
+        double erosion = player.getAttributeValue(ModAttributes.PLAYER_SPIRIT_EROSION);
+        iconErosionHud(guiGraphics, player, erosion, Config.HUD_SHOW_VALUES.get());
     }
 
-    private static void defaultSaneHud(GuiGraphics guiGraphics, double saneValue, boolean displaysValues) {
+    private static void iconSaneHud(GuiGraphics guiGraphics, double saneValue, boolean displaysValues) {
         int x = guiGraphics.guiWidth() / 2 - 175;
         int y = guiGraphics.guiHeight() - 29;
         guiGraphics.blitSprite(SANE_TEXTURES[0], x, y, 50, 25);
         if (displaysValues) {
-            renderText(guiGraphics, String.format("%.2f", saneValue), x, y - 10, 0xC0FFFFFF);
+            renderText(guiGraphics, String.valueOf((int) saneValue), x, y - 10, 0xC0FFFFFF);
         }
 
         double length = saneValue >= 100 ? 1 : saneValue * 0.01;
         guiGraphics.blitSprite(SANE_TEXTURES[1], 44, 21, 0, 0, x + 3, y + 2, Mth.ceil(length * 44), 21);
     }
 
-    private static void defaultErosionHud(GuiGraphics guiGraphics, Player player, double erosion, boolean displaysValues) {
+    private static void iconErosionHud(GuiGraphics guiGraphics, Player player, double erosion, boolean displaysValues) {
         float maxHealth = (float) Math.max(player.getAttributeValue(Attributes.MAX_HEALTH), Mth.ceil(player.getHealth()));
         int absorptionAmount = Mth.ceil(player.getAbsorptionAmount());
         int height = Math.max(10 - (Mth.ceil((maxHealth + (float) absorptionAmount) / 2.0F / 10.0F) - 2), 3);
@@ -123,15 +114,4 @@ public class InGameHud {
         return minecraft.getCameraEntity() instanceof Player player ? player : null;
     }
 
-    public enum HudType {
-        Default,
-        ModernizeHud
-    }
-
-    public enum HudPosition {
-        TopLeftCorner,
-        TopRightCorner,
-        AboveTheInventory,
-        Custom
-    }
 }

@@ -1,12 +1,12 @@
 package io.github.jixingdefeng.visionrealm.core.entity.ai.goal.entity.administrator;
 
-import io.github.jixingdefeng.visionrealm.core.entity.custom.AdministratorEntity;
+import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 public abstract class AdministratorGoal extends Goal {
-    protected final AdministratorEntity mob;
+    protected final Administrator mob;
 
-    public AdministratorGoal(AdministratorEntity mob) {
+    public AdministratorGoal(Administrator mob) {
         this.mob = mob;
     }
 

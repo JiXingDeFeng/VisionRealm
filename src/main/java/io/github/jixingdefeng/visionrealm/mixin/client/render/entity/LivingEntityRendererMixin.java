@@ -6,14 +6,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.jixingdefeng.visionrealm.api.client.render.entity.EntityRenderRedirector;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LivingEntityRenderer.class)
-public abstract class LivingEntityRendererMixin<T extends Entity> implements EntityRenderRedirector<T> {
+public abstract class LivingEntityRendererMixin<E extends LivingEntity, M extends EntityModel<E>> implements EntityRenderRedirector<E, M> {
 
     @Redirect(
             method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
@@ -22,8 +21,15 @@ public abstract class LivingEntityRendererMixin<T extends Entity> implements Ent
                     target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"
             )
     )
-    @SuppressWarnings("unchecked")
-    private void modifyRenderToBuffer(EntityModel<T> model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color, @Local(argsOnly = true) LivingEntity entity) {
-        this.redirectRenderToBuffer(model, (T) entity, poseStack, vertexConsumer, packedLight, packedOverlay, color);
+    private void modifyRenderToBuffer(
+            M model,
+            PoseStack poseStack,
+            VertexConsumer vertexConsumer,
+            int packedLight,
+            int packedOverlay,
+            int color,
+            @Local(argsOnly = true) E entity
+    ) {
+        this.renderToBuffer(model, entity, poseStack, vertexConsumer, packedLight, packedOverlay, color);
     }
 }

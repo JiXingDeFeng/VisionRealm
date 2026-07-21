@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityParticleMixin implements EntityParticleProvider {
-
     @Unique private final LivingEntity visionrealm$entity = (LivingEntity) (Object) this;
     @Unique private DamageSource visionrealm$deathDamageSource;
 
@@ -26,14 +25,16 @@ public class LivingEntityParticleMixin implements EntityParticleProvider {
 
     @Inject(method = "makePoofParticles", at = @At("HEAD"), cancellable = true)
     private void makePoofParticles(CallbackInfo ci) {
-        if (this.canShowDeathParticles(this.visionrealm$deathDamageSource)) {
-            SingletonParticleConfig deathParticle = this.getDeathParticles(this.visionrealm$deathDamageSource);
-            if (deathParticle != null) {
-                deathParticle.spawnParticles(this.visionrealm$entity);
+        if (((EntityParticleProvider) this.visionrealm$entity).useParticleSystem()) {
+            if (this.canShowDeathParticles(this.visionrealm$deathDamageSource)) {
+                SingletonParticleConfig deathParticle = this.getDeathParticles(this.visionrealm$deathDamageSource);
+                if (deathParticle != null) {
+                    deathParticle.spawnParticles(this.visionrealm$entity);
+                }
             }
-        }
 
-        ci.cancel();
+            ci.cancel();
+        }
     }
 
     @Inject(method = "hurt", at = @At("TAIL"))

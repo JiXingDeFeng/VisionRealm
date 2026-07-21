@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TargetSelectors {
+public final class TargetSelectors {
 
     public static <T, S extends TargetSelector<T, S>> BaseSelector<T, S> create(Level level) {
         return new BaseSelector<>(level);
@@ -34,16 +34,20 @@ public class TargetSelectors {
         return create(level).converted(PositionSelectorImpl::new);
     }
 
+    public static PositionSelector position(AbstractSelector<?, ?> selector, @Nullable Level level) {
+        return new PositionSelectorImpl(selector, level);
+    }
+
     public static PositionSelector position(PositionSelectorImpl selector, @Nullable Level level) {
         return new PositionSelectorImpl(selector, level);
     }
 
-    public static EntitySelector<Entity> entityAll(Level level) {
-        return EntitySelectorImpl.createAll(create(level), level);
+    public static <T extends Entity> EntitySelector<T> entity(@NotNull EntityType<T> type, Level level) {
+        return new EntitySelectorImpl<>(create(level), type, level);
     }
 
-    public static <T extends Entity> EntitySelector<T> entity(@NotNull EntityType<T> type, @Nullable Level level) {
-        return new EntitySelectorImpl<>(create(level), type, level);
+    public static <T extends Entity> EntitySelector<T> entity(@NotNull EntityType<T> type, AbstractSelector<?, ?> selector, @Nullable Level level) {
+        return new EntitySelectorImpl<>(selector, type, level);
     }
 
     public static <T extends Entity> EntitySelector<T> entity(EntitySelectorImpl<T> selector, @Nullable Level level) {
@@ -54,16 +58,53 @@ public class TargetSelectors {
         return create(level).converted(EntitySelectorImpl.PlayerSelector::new);
     }
 
-    public static EntitySelector<Player> player(EntitySelectorImpl<Player> selector, @Nullable EntityType<Player> type, @Nullable Level level) {
-        if (type != null) {
-            return new EntitySelectorImpl.PlayerSelector(selector, type ,level);
-        } else {
-            return new EntitySelectorImpl.PlayerSelector(selector, level);
-        }
+    public static EntitySelector<Player> player(
+            AbstractSelector<?, ?> selector,
+            @Nullable Level level
+    ) {
+        return new EntitySelectorImpl.PlayerSelector(selector, level);
+    }
+
+    public static EntitySelector<Player> player(
+            EntitySelectorImpl.PlayerSelector selector,
+            @Nullable Level level
+    ) {
+        return new EntitySelectorImpl.PlayerSelector(selector, level);
+    }
+
+    public static EntitySelector<Entity> multiEntityType(
+            Level level,
+            EntityType<?>... types
+    ) {
+        return EntitySelectorImpl.createMultipleTypes(create(level), level, types);
+    }
+
+    public static EntitySelector<Entity> multiEntityType(
+            AbstractSelector<?, ?> selector,
+            @Nullable Level level,
+            EntityType<?>... types
+    ) {
+        return EntitySelectorImpl.createMultipleTypes(selector, level, types);
+    }
+
+    public static EntitySelector<Entity> multiEntityType(
+            EntitySelectorImpl.MultiTypeEntity selector,
+            @Nullable Level level,
+            EntityType<?>... types
+    ) {
+        return EntitySelectorImpl.createMultipleTypes(selector, level, types);
+    }
+
+    public static EntitySelector<Entity> entityAll(Level level) {
+        return EntitySelectorImpl.createAll(create(level), level);
     }
 
     public static BlockSelector block(Level level) {
         return create(level).converted(BlockSelectorImpl::new);
+    }
+
+    public static BlockSelector block(AbstractSelector<?, ?> selector, @Nullable Level level) {
+        return new BlockSelectorImpl(selector, level);
     }
 
     public static BlockSelector block(BlockSelectorImpl selector, @Nullable Level level) {

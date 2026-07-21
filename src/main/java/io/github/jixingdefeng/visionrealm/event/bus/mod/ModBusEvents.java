@@ -23,7 +23,7 @@ public class ModBusEvents {
     }
 
     @SubscribeEvent
-    public static void registryParticleConfig(RegistryParticleConfigTypeEvent event) {
+    public static void registryParticleConfig(final RegistryParticleConfigTypeEvent event) {
         ParticleEvents.registryParticleConfig(event);
     }
 }

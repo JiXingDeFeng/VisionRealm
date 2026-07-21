@@ -1,10 +1,13 @@
 package io.github.jixingdefeng.visionrealm.api.selector.game;
 
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A registered target selector that provides delayed target extraction.
@@ -39,7 +42,7 @@ public interface RegisteredTargetSelector<T, S extends TargetSelector<T, S>> {
      * @param random The random source for random operations
      * @return A configured target selector instance
      */
-    S targetSelector(Level level, RandomSource random);
+    S targetSelector(ServerLevel level, RandomSource random);
 
     /**
      * Returns the execution result as a collection of targets.
@@ -51,7 +54,20 @@ public interface RegisteredTargetSelector<T, S extends TargetSelector<T, S>> {
      * @param random The random source for random operations
      * @return The collection of targets
      */
-    Collection<T> getTarget(Level level, RandomSource random);
+    Collection<T> getTarget(ServerLevel level, RandomSource random);
+
+    /**
+     * Returns the execution result as a collection of targets.
+     * <p>
+     * This method uses {@link MinecraftServer} to access all levels.
+     * The actual levels used are determined by {@link #getLevels(MinecraftServer)}.
+     * </p>
+     *
+     * @param server The Minecraft server instance
+     * @param random The random source for random operations
+     * @return The collection of targets
+     */
+    Collection<T> getTarget(MinecraftServer server, RandomSource random);
 
     /**
      * Returns the dimensions where this target selector is applicable.
@@ -59,6 +75,18 @@ public interface RegisteredTargetSelector<T, S extends TargetSelector<T, S>> {
      * @return An unmodifiable collection of dimension keys
      */
     Collection<ResourceKey<Level>> getDimension();
+
+    /**
+     * Returns the server levels where this target selector is applicable.
+     * <p>
+     * This method resolves the dimensions from {@link #getDimension()} to actual
+     * {@link ServerLevel} instances. If no dimensions are specified, returns an empty list.
+     * </p>
+     *
+     * @param server The Minecraft server instance
+     * @return A list of server levels to operate on, or empty list if no dimensions are configured
+     */
+    List<ServerLevel> getLevels(MinecraftServer server);
 
     /**
      * Returns whether the target selector yields a single result.

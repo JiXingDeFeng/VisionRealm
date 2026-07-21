@@ -5,20 +5,19 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Supplier;
 
 public class ModSounds {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, VisionRealm.MOD_ID);
 
-    public static final Supplier<SoundEvent> THE_FORGOTTEN_HURT = register("the_forgotten_hurt");
-    public static final Supplier<SoundEvent> THE_FORGOTTEN_DEATH = register("the_forgotten_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FORGOTTEN_SHADOW_HURT = register("forgotten_shadow_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FORGOTTEN_SHADOW_DEATH = register("forgotten_shadow_death");
 
     // 语音
-    public static final Supplier<SoundEvent> OBSERVATION_ADMIN_RENAMED = register("observation_admin_renamed");
+    public static final DeferredHolder<SoundEvent, SoundEvent> OBSERVATION_ADMIN_RENAMED = register("observation_admin_renamed");
 
-    private static Supplier<SoundEvent> register(String name) {
+    private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(VisionRealm.MOD_ID, name);
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }

@@ -1,7 +1,7 @@
 package io.github.jixingdefeng.visionrealm.core.entity.ai.goal.entity.administrator;
 
-import io.github.jixingdefeng.visionrealm.core.entity.custom.AdministratorEntity;
-import io.github.jixingdefeng.visionrealm.core.entity.custom.SecondaryTarget;
+import io.github.jixingdefeng.visionrealm.core.entity.ai.goal.SecondaryTarget;
+import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
 import io.github.jixingdefeng.visionrealm.core.sound.ModSounds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class ObservationGoal extends AdministratorGoal {
 
-    public ObservationGoal(AdministratorEntity mob) {
+    public ObservationGoal(Administrator mob) {
         super(mob);
         this.setFlags(EnumSet.of(Flag.LOOK));
     }
@@ -23,7 +23,7 @@ public class ObservationGoal extends AdministratorGoal {
     @Override
     public boolean canUse() {
         LivingEntity livingEntity = this.mob.getTarget();
-        if (livingEntity == null || this.mob.getBehaviorMode() != AdministratorEntity.BehaviorMode.OBSERVATION) {
+        if (livingEntity == null || this.mob.getBehaviorMode() != Administrator.BehaviorMode.OBSERVATION) {
             return false;
         } else {
             return livingEntity.isAlive();

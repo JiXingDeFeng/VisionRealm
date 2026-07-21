@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.core.entity.ai.goal.entity.administrator;
 
-import io.github.jixingdefeng.visionrealm.core.entity.custom.AdministratorEntity;
+import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.EnumSet;
@@ -8,7 +8,7 @@ import java.util.EnumSet;
 public class InterferenceGoal extends AdministratorGoal {
     public int j = -1;
 
-    public InterferenceGoal(AdministratorEntity mob) {
+    public InterferenceGoal(Administrator mob) {
         super(mob);
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
@@ -16,7 +16,7 @@ public class InterferenceGoal extends AdministratorGoal {
     @Override
     public boolean canUse() {
         LivingEntity livingEntity = this.mob.getTarget();
-        if (livingEntity == null || this.mob.getBehaviorMode() != AdministratorEntity.BehaviorMode.INTERFERENCE) {
+        if (livingEntity == null || this.mob.getBehaviorMode() != Administrator.BehaviorMode.INTERFERENCE) {
             return false;
         } else {
             return livingEntity.isAlive();

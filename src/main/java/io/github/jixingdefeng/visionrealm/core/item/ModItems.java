@@ -2,15 +2,13 @@ package io.github.jixingdefeng.visionrealm.core.item;
 
 import io.github.jixingdefeng.visionrealm.core.VisionRealm;
 import io.github.jixingdefeng.visionrealm.core.block.ModBlocks;
-import io.github.jixingdefeng.visionrealm.core.entity.Entities;
-import io.github.jixingdefeng.visionrealm.core.entity.custom.AdministratorEntity;
-import net.minecraft.core.Direction;
+import io.github.jixingdefeng.visionrealm.core.entity.ModEntities;
+import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SignItem;
-import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
@@ -33,14 +31,14 @@ public class ModItems {
     public static final DeferredItem<Item> OBSERVATION_ADMIN_SPAWN_EGG = ITEMS.register(
             "observation_administrator_spawn_egg",
             () -> new InitializedSpawnEggItem(
-                    Entities.ADMINISTRATOR,
+                    ModEntities.ADMINISTRATOR,
                     0xFF00FF,
                     0x000000,
                     false,
                     new Item.Properties(),
                     (player, entity, pos) -> {
-                        if (entity instanceof AdministratorEntity mob) {
-                            AdministratorEntity.initEntity(mob, player, AdministratorEntity.BehaviorMode.OBSERVATION);
+                        if (entity instanceof Administrator mob) {
+                            Administrator.initEntity(mob, player, Administrator.BehaviorMode.OBSERVATION);
                         }
                     }
             )
@@ -48,24 +46,24 @@ public class ModItems {
     public static final DeferredItem<Item> INTERFERENCE_ADMIN_SPAWN_EGG = ITEMS.register(
             "interference_administrator_spawn_egg",
             () -> new InitializedSpawnEggItem(
-                    Entities.ADMINISTRATOR,
+                    ModEntities.ADMINISTRATOR,
                     0xFF00FF,
                     0x000000,
                     false,
                     new Item.Properties(),
                     (player, entity, pos) -> {
-                        if (entity instanceof AdministratorEntity mob) {
+                        if (entity instanceof Administrator mob) {
                             AABB aabb = entity.getBoundingBox().inflate(50);
                             List<Player> players = player.level().getEntitiesOfClass(Player.class, aabb, LivingEntity::isAlive);
-                            AdministratorEntity.initEntity(mob, players.get(player.getRandom().nextInt(players.size())), AdministratorEntity.BehaviorMode.INTERFERENCE);
+                            Administrator.initEntity(mob, players.get(player.getRandom().nextInt(players.size())), Administrator.BehaviorMode.INTERFERENCE);
                         }
                     }
             )
     );
-    public static final DeferredItem<Item> THE_FORGOTTEN_SPAWN_EGG = ITEMS.register(
-            "the_forgotten_spawn_egg",
+    public static final DeferredItem<Item> FORGOTTEN_SHADOW_SPAWN_EGG = ITEMS.register(
+            "forgotten_shadow_spawn_egg",
             () -> new DeferredSpawnEggItem(
-                    Entities.WANDERER,
+                    ModEntities.FORGOTTEN_SHADOW,
                     0x000000,
                     0x808080,
                     new Item.Properties()
@@ -73,28 +71,19 @@ public class ModItems {
     );
 
     // 方块物品
-    public static final DeferredItem<Item> LURKER_DISGUISE_BLOCK = ITEMS.register(
-            "lurker_disguise_block",
-            () -> new StandingAndWallBlockItem(
-                    ModBlocks.CustomBlocks.LURKER_DISGUISE_BLOCK.get(),
-                    ModBlocks.CustomBlocks.LURKER_DISGUISE_WALL_BLOCK.get(),
-                    new Item.Properties(),
-                    Direction.NORTH
-            )
-    );
     public static final DeferredItem<Item> BLOOD_CORRODED_CHERRY_WALL_SIGN = ITEMS.register(
             "blood_corroded_cherry_sign",
             () -> new SignItem(
                     new Item.Properties(),
-                    ModBlocks.VanillaBlockVariants.BLOOD_CORRODED_CHERRY_SIGN.get(),
-                    ModBlocks.VanillaBlockVariants.BLOOD_CORRODED_CHERRY_WALL_SIGN.get()
+                    ModBlocks.BLOOD_CORRODED_CHERRY_SIGN.get(),
+                    ModBlocks.BLOOD_CORRODED_CHERRY_WALL_SIGN.get()
             )
     );
     public static final DeferredItem<Item> BLOOD_CORRODED_CHERRY_WALL_HANGING_SIGN = ITEMS.register(
             "blood_corroded_cherry_hanging_sign",
             () -> new HangingSignItem(
-                    ModBlocks.VanillaBlockVariants.BLOOD_CORRODED_CHERRY_HANGING_SIGN.get(),
-                    ModBlocks.VanillaBlockVariants.BLOOD_CORRODED_CHERRY_WALL_HANGING_SIGN.get(),
+                    ModBlocks.BLOOD_CORRODED_CHERRY_HANGING_SIGN.get(),
+                    ModBlocks.BLOOD_CORRODED_CHERRY_WALL_HANGING_SIGN.get(),
                     new Item.Properties()
             )
     );

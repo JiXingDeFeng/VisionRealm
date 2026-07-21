@@ -25,11 +25,45 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
+import java.util.Set;
 import java.util.function.Predicate;
 
+/**
+ * Default implementation of {@link EntitySelector} that retrieves entities
+ * from a {@link Level} based on various filters, ranges, and limits.
+ *
+ * <p>This class is the backbone for entity-based target selection. It supports:
+ * <ul>
+ *   <li>Bounding box and spherical range queries</li>
+ *   <li>Height range filtering</li>
+ *   <li>Biome allow/deny lists</li>
+ *   <li>Custom per-entity predicate chains</li>
+ *   <li>Per-extraction customization via {@link TargetCustomizer}</li>
+ *   <li>Snapshot-based execution for consistent batch selection</li>
+ * </ul>
+ *
+ * <p><b>Extending:</b> Subclasses only need to override {@link #getEntities}
+ * to adapt the entity fetching logic (e.g., for players or multi-type queries).
+ * All other behavior is provided by this base class.
+ *
+ * @param <T> the entity type this selector targets
+ * @author JiXingDeFeng
+ * @since 0.0.2-dev
+ */
 public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, EntitySelector<T>> implements EntitySelector<T> {
     protected final EntityType<T> type;
+
+    public static PlayerSelector createPlayer(AbstractSelector<?, ?> source, @Nullable Level level) {
+        return new PlayerSelector(source, level);
+    }
+
+    public static MultiTypeEntity createMultipleTypes(
+            AbstractSelector<?, ?> source,
+            @Nullable Level level,
+            EntityType<?>... types
+    ) {
+        return new MultiTypeEntity(source, level, types);
+    }
 
     public static AllEntity createAll(AbstractSelector<?, ?> source, @Nullable Level level) {
         return new AllEntity(source, level);
@@ -48,12 +82,12 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
     @Override
     protected void push(TargetProvider<T> actuator) {
         EntitySnapshot<T> snapshot = EntitySnapshot.of(this, actuator);
-        this.snapshotDeque.add(snapshot);
+        this.snapshot.add(snapshot);
     }
 
     @Override
-    protected EntitySnapshot<T> pop() {
-        return (EntitySnapshot<T>) this.snapshotDeque.pop();
+    protected EntitySnapshot<T> poll() {
+        return (EntitySnapshot<T>) this.snapshot.poll();
     }
 
     @Override
@@ -68,36 +102,52 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
 
     @Override
     protected void execute() {
-        if (this.level instanceof ServerLevel serverLevel) {
-            if (!this.isExecuted()) {
-                super.execute();
-                while (!this.snapshotDeque.isEmpty()) {
-                    EntitySnapshot<T> snapshot = this.pop();
-                    List<Biome> biomeList = this.getAllowBiomes(serverLevel, snapshot);
-                    List<T> values = this.selectWithSnapshot(entity -> true, biomeList::contains, snapshot, serverLevel);
-                    this.cachedResults.addAll(values);
-                }
+        if (!this.isExecuted()) {
+            super.execute();
+            Level level = this.level;
+            List<T> values = new ArrayList<>();
+            while (!this.snapshot.isEmpty()) {
+                EntitySnapshot<T> snapshot = this.poll();
+                List<Biome> biomeList = this.getAllowBiomes(level, snapshot);
+                values .addAll(this.selectWithSnapshot(biomeList::contains, snapshot, level));
             }
+
+            this.cachedResults = List.copyOf(values);
         }
     }
 
+    /**
+     * Validates a single entity against all active filters.
+     *
+     * <p>Checks in order: height range, biome, spherical range (if set),
+     * loaded chunk requirement (if requested), and finally the list of
+     * custom predicates added via {@link #filter}.
+     *
+     * @param filter         biome predicate (from allow/deny lists)
+     * @param predicate      additional entity predicates
+     * @param entity         the entity being tested
+     * @param sphereRange    spherical restriction (already offset by reference center if needed)
+     * @param level          the current level
+     * @param yRange          allowed height range
+     * @param loadedOnly     if {@code true}, the entity's block position must be loaded
+     * @return {@code true} if the entity passes all checks
+     */
     protected boolean validate(
             Predicate<? super Biome> filter,
-            Queue<Predicate<? super T>> predicate,
+            List<Predicate<? super T>> predicate,
             @NotNull T entity,
-            @Nullable Vec3 referenceCenter,
             @Nullable SphereRange sphereRange,
             Level level,
-            Range<Double> range,
+            Range<Double> yRange,
             boolean loadedOnly
     ) {
         BlockPos blockPos = entity.getOnPos();
         Holder<Biome> biome = level.getBiome(blockPos);
         Vec3 position = entity.position();
-        boolean valid = range.contains(position.y) && filter.test(biome.value());
+        boolean valid = yRange.contains(position.y) && filter.test(biome.value());
         if (valid) {
             if (sphereRange != null) {
-                valid = entity.distanceToSqr(sphereRange.getCenter(referenceCenter)) <= sphereRange.radius();
+                valid = entity.distanceToSqr(sphereRange.center()) <= sphereRange.radius();
             }
 
             if (loadedOnly) {
@@ -113,50 +163,69 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
         return valid;
     }
 
-    protected <L extends Level, R extends RandomSource> List<T> filterAndPostProcess(
-            Predicate<? super T> filter,
-            TargetCustomizer<T, L, R> customizer,
-            List<T> targets,
-            L level,
-            R random,
-            int limit
-    ) {
-        List<T> values = customizer.postProcess(targets, level, random);
-        List<T> results = new ArrayList<>();
-        for (T entity : values) {
-            if ((limit <= 0 || results.size() < limit) && filter.test(entity)) {
-                results.add(entity);
-            }
-        }
+    @Nullable
+    protected AABB getBoxRange(SphereRange sphereRange) {
+        if (sphereRange == null) {
+            return null;
+        } else {
+            Vec3 center = sphereRange.center();
+            double radius = sphereRange.radius();
 
-        return results;
+            return new AABB(
+                    center.x + radius, center.y + radius, center.z + radius,
+                    center.x - radius, center.y - radius, center.z - radius
+            );
+        }
     }
 
+    /**
+     * Resolves the final search bounding box by prioritizing a stored
+     * box (from {@link #offset}) over a dynamically computed
+     * one from {@link #getBoxRange}.
+     *
+     * @param sphereRange    sphere configuration
+     * @param boxRange       an optional pre-defined box (may be offset later)
+     * @return the effective bounding box to use for the query
+     */
     @Nullable
-    protected AABB getRange(Vec3 referenceCenter, SphereRange sphereRange, RandomSource random) {
-        Vec3 center;
-        double radius;
-        if (sphereRange != null) {
-            center = sphereRange.getCenter(referenceCenter);
-            radius = sphereRange.radius();
-        } else if (referenceCenter != null) {
-            center = referenceCenter;
-            radius = random.nextInt(128);
+    protected AABB getRange(SphereRange sphereRange, AABB boxRange) {
+        if (boxRange != null) {
+            return boxRange;
+        } else if (sphereRange != null) {
+            return this.getBoxRange(sphereRange);
         } else {
             return null;
         }
-
-        return new AABB(
-                center.x + radius, center.y + radius, center.z + radius,
-                center.x - radius, center.y - radius, center.z - radius
-        );
     }
 
+    /**
+     * Core method that executes one snapshot of entity selection.
+     * <p>
+     * This method:
+     * <ol>
+     *   <li>Determines the random source (provider &gt; snapshot &gt; level fallback)</li>
+     *   <li>Computes the search bounding box via {@link #getRange}, after applying
+     *       reference‑center offsets to the snapshot's sphere and box ranges</li>
+     *   <li>Fetches candidate entities using {@link #getEntities} (with a
+     *       candidate limit from the customizer), filtering them through
+     *       {@link #validate}</li>
+     *   <li>Trims the candidates to at most {@link #limit} results (if &gt; 0),
+     *       then applies {@link TargetCustomizer#postProcess post‑processing}
+     *       and returns the final list</li>
+     * </ol>
+     * If no valid search region exists, logs an error and returns the
+     * fallback from {@link TargetCustomizer#onFallback}.
+     *
+     * @param filter   the biome predicate derived from allow/deny settings
+     * @param snapshot the current snapshot configuration (spatial constraints
+     *                 should already be offset for any reference center)
+     * @param level    the level to search in (typically a {@code ServerLevel})
+     * @return the list of selected targets (never {@code null}, may be empty)
+     */
     protected List<T> selectWithSnapshot(
-            Predicate<? super T> predicate,
             Predicate<? super Biome> filter,
             EntitySnapshot<T> snapshot,
-            ServerLevel level
+            Level level
     ) {
         TargetProvider<T> provider = snapshot.provider;
         RandomSource random = level.random;
@@ -166,40 +235,66 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
             random = snapshot.random;
         }
 
+        TargetCustomizer<T, Level, RandomSource> customizer = provider.customizer();
         Vec3 referenceCenter = snapshot.referenceCenter;
-        SphereRange sphereRange = snapshot.sphereRange;
-        AABB boxRange = this.getOffsetResult(referenceCenter, snapshot.boxRange);
-        boxRange = boxRange == null ? this.getRange(referenceCenter, sphereRange, random) : boxRange;
+        SphereRange sphereRange = this.offset(referenceCenter, snapshot.sphereRange);
+        AABB box = this.offset(referenceCenter, snapshot.boxRange);
+        AABB boxRange = this.getRange(sphereRange, box);
         if (boxRange != null) {
-            TargetCustomizer<T, Level, RandomSource> customizer = provider.customizer();
-            int limit = provider.single() ? 1 : customizer.getExtractionCount(level, random);
-            List<T> valueList = this.getEntities(
-                    entity -> predicate.test(entity)
-                            && this.validate(
-                            filter, snapshot.filters, entity, referenceCenter, sphereRange, level, snapshot.heightRange, snapshot.loadedOnly
-                    ), level, boxRange, limit
+            int number = provider.single() ? 1 : customizer.getExtractionCount(level, random);
+            List<T> values = this.getEntities(
+                    entity -> this.validate(
+                            filter, snapshot.filters, entity, sphereRange, level, snapshot.heightRange, snapshot.loadedOnly
+                    ), level, boxRange, number >= 0 ? number : Integer.MAX_VALUE
             );
-            return this.filterAndPostProcess(target -> true, customizer, valueList, level, random, snapshot.limit);
+            List<T> results = new ArrayList<>();
+            for (T entity : values) {
+                if (this.limit <= 0 || results.size() < this.limit) {
+                    results.add(entity);
+                }
+            }
+
+            return customizer.postProcess(results, level, random);
         } else {
-            VisionRealm.LOGGER.warn("No position range specified for entity selection. Unable to query entities.", new RuntimeException());
-            return List.of();
+            VisionRealm.LOGGER.error("No position range specified for entity selection. Unable to query entities.");
+            return customizer.onFallback(level, random);
         }
     }
 
-    protected List<T> getEntities(Predicate<T> predicate, ServerLevel level, AABB aabb, int maxResults) {
+    /**
+     * Retrieves a list of entities from the level that match the given
+     * predicate and bounding box, up to the specified maximum.
+     * <p>
+     * Subclasses override this to customize how entities are fetched
+     * (e.g., using {@code level.getPlayers} for player selection, or
+     * using a custom {@link EntityTypeTest} for multi-type selection).
+     *
+     * @param predicate  the combined filter predicate
+     * @param level      the server level
+     * @param aabb       the bounding box to search in
+     * @param maxResults the maximum number of entities to return
+     * @return a mutable list of matching entities
+     */
+    protected List<T> getEntities(Predicate<T> predicate, Level level, AABB aabb, int maxResults) {
         List<T> entities = new ArrayList<>();
         level.getEntities(this.type, aabb, predicate, entities, maxResults);
         return entities;
     }
 
+    /**
+     * Selector specialized for players.
+     * <p>
+     * Overrides {@link #getEntities} to use {@link ServerLevel#getPlayers},
+     * which is more efficient and respects player‑specific visibility rules.
+     * On the client side, this returns an empty list because player queries
+     * are only meaningful on the server.
+     *
+     * @since 0.0.2‑dev
+     */
     public static class PlayerSelector extends EntitySelectorImpl<Player> {
 
-        public PlayerSelector(AbstractSelector<?, ?> source, EntityType<Player> type, @Nullable Level level) {
-            super(source, type, level);
-        }
-
         public PlayerSelector(AbstractSelector<?, ?> source, @Nullable Level level) {
-            this(source, EntityType.PLAYER, level);
+            super(source, EntityType.PLAYER, level);
         }
 
         public PlayerSelector(PlayerSelector source, @Nullable Level level) {
@@ -207,15 +302,31 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
         }
 
         @Override
-        protected List<Player> getEntities(Predicate<Player> predicate, ServerLevel level, AABB aabb, int maxResults) {
-            return new ArrayList<>(
-                    level.getPlayers(serverPlayer -> aabb.contains(serverPlayer.position()) && predicate.test(serverPlayer), maxResults)
-            );
+
+
+        protected List<Player> getEntities(Predicate<Player> predicate, Level level, AABB aabb, int maxResults) {
+            if (level instanceof ServerLevel serverLevel) {
+                return new ArrayList<>(
+                        serverLevel.getPlayers(serverPlayer -> aabb.contains(serverPlayer.position())
+                                && predicate.test(serverPlayer), maxResults)
+                );
+            } else {
+                return new ArrayList<>();
+            }
         }
     }
 
+    /**
+     * Selector that matches all entity types.
+     * <p>
+     * Uses a universal {@link EntityTypeTest} that accepts every entity.
+     * Useful when filtering is intended to be done solely through
+     * predicates rather than by entity type.
+     *
+     * @since 0.0.2-dev
+     */
     public static class AllEntity extends EntitySelectorImpl<Entity> {
-        protected static final EntityTypeTest<Entity, Entity> allEntity = new EntityTypeTest<>() {
+        protected static final EntityTypeTest<Entity, Entity> ALL_ENTITY = new EntityTypeTest<>() {
             @Override
             public Entity tryCast(@NotNull Entity entity) {
                 return entity;
@@ -237,9 +348,54 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
         }
 
         @Override
-        protected List<Entity> getEntities(Predicate<Entity> predicate, ServerLevel level, AABB aabb, int maxResults) {
+        protected List<Entity> getEntities(Predicate<Entity> predicate, Level level, AABB aabb, int maxResults) {
             List<Entity> entities = new ArrayList<>();
-            level.getEntities(allEntity, aabb, predicate, entities, maxResults);
+            level.getEntities(ALL_ENTITY, aabb, predicate, entities, maxResults);
+            return entities;
+        }
+    }
+
+    /**
+     * Selector that matches entities of several specific types.
+     * <p>
+     * The allowed types are fixed at construction time and stored in an
+     * immutable set. Internally, a custom {@link EntityTypeTest} is used
+     * to perform the type check.
+     *
+     * @since 0.0.3-dev
+     */
+    public static class MultiTypeEntity extends EntitySelectorImpl<Entity> {
+        protected final MultipleTypes multipleTypes;
+
+        public MultiTypeEntity(AbstractSelector<?, ?> source, @Nullable Level level, EntityType<?>... types) {
+            super(source, null, level);
+            this.multipleTypes = new MultipleTypes(Set.of(types));
+        }
+
+        public MultiTypeEntity(MultiTypeEntity source, @Nullable Level level) {
+            super(source, level);
+            this.multipleTypes = new MultipleTypes(source.multipleTypes.types());
+        }
+
+        protected record MultipleTypes(Set<EntityType<?>> types) implements EntityTypeTest<Entity, Entity> {
+
+            @Override
+            @Nullable
+            public Entity tryCast(@NotNull Entity entity) {
+                return this.types.contains(entity.getType()) ? entity : null;
+            }
+
+            @Override
+            @NotNull
+            public Class<? extends Entity> getBaseClass() {
+                return Entity.class;
+            }
+        }
+
+        @Override
+        protected List<Entity> getEntities(Predicate<Entity> predicate, Level level, AABB aabb, int maxResults) {
+            List<Entity> entities = new ArrayList<>();
+            level.getEntities(this.multipleTypes, aabb, predicate, entities, maxResults);
             return entities;
         }
     }
@@ -251,14 +407,13 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
                 @Nullable AABB boxRange,
                 @Nullable SphereRange sphereRange,
                 Range<Double> heightRange,
-                int limit,
                 boolean loadedOnly,
                 Collection<ResourceKey<? extends Biome>> allowBiomes,
                 Collection<ResourceKey<? extends Biome>> denyBiomes,
-                Queue<Predicate<? super T>> filters,
+                List<Predicate<? super T>> filters,
                 TargetProvider<T> provider
         ) {
-            super(referenceCenter, random, boxRange, sphereRange, heightRange, limit, loadedOnly, allowBiomes, denyBiomes, filters, provider);
+            super(referenceCenter, random, boxRange, sphereRange, heightRange, loadedOnly, allowBiomes, denyBiomes, filters, provider);
         }
 
         public static <T extends Entity> EntitySnapshot<T> of(
@@ -271,7 +426,6 @@ public class EntitySelectorImpl<T extends Entity> extends BaseSelector<T, Entity
                     selector.boxRange,
                     selector.sphereRange,
                     selector.heightRange,
-                    selector.limit,
                     selector.loadedOnly,
                     selector.allowBiomes,
                     selector.denyBiomes,
