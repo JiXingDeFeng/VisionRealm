@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.core.data.worldgen.features;
 
-import io.github.jixingdefeng.visionrealm.core.VisionRealm;
+import io.github.jixingdefeng.visionrealm.VisionRealm;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;

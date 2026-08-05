@@ -4,8 +4,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.jixingdefeng.visionrealm.impl.particle.list.WeightedParticleConfig;
-import io.github.jixingdefeng.visionrealm.impl.particle.singleton.ImmutableParticleConfig;
+import io.github.jixingdefeng.visionrealm.core.particle_config.list.WeightedParticleConfig;
+import io.github.jixingdefeng.visionrealm.core.particle_config.singleton.ImmutableParticleConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -13,7 +13,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
-import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -74,16 +73,16 @@ import java.util.List;
  * @author JiXingDeFeng
  * @see ParticleConfig
  * @see WeightedParticleConfig
- * @since 0.0.1-dev
+ * @since 0.1.0
  */
 public interface SingletonParticleConfig extends ParticleConfig {
-    MapCodec<SingletonParticleConfig> CODEC = RecordCodecBuilder.mapCodec(instance ->
+    MapCodec<SingletonParticleConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     BuiltInRegistries.PARTICLE_TYPE.byNameCodec().<ParticleOptions>dispatch(
                             ParticleOptions::getType,
                             ParticleType::codec
                     ).fieldOf("particle").forGetter(SingletonParticleConfig::particleType),
-                    IntProvider.NON_NEGATIVE_CODEC.fieldOf("count").forGetter(SingletonParticleConfig::countProvider),
+                    Codec.INT.fieldOf("count").forGetter(SingletonParticleConfig::count),
                     Codec.DOUBLE.optionalFieldOf("speed", 0.0).forGetter(SingletonParticleConfig::speed),
                     Codec.either(Codec.DOUBLE, Vec3.CODEC).xmap(
                                     either -> either.map(
@@ -135,40 +134,6 @@ public interface SingletonParticleConfig extends ParticleConfig {
             double yOffset,
             double zOffset
     ) {
-        return ImmutableParticleConfig.of(particleType, count, speed, spreadX, spreadY, spreadZ, xOffset, yOffset, zOffset);
-    }
-
-    /**
-     * Creates a new immutable particle configuration.
-     *
-     * @param particleType the type of particle to spawn
-     * @param count the range of particles to spawn (e.g., UniformInt.of(3, 8));
-     *              note: the special behavior for count = 0 does not apply here,
-     *              as IntProvider does not support zero
-     * @param speed the speed parameter - when count > 0: standard deviation for random velocity;
-     *              when count = 0: base speed magnitude multiplied with spread direction
-     * @param spreadX when count > 0: standard deviation for X-axis position spread;
-     *                when count = 0: X component of direction vector (multiplied by speed)
-     * @param spreadY when count > 0: standard deviation for Y-axis position spread;
-     *                when count = 0: Y component of direction vector (multiplied by speed)
-     * @param spreadZ when count > 0: standard deviation for Z-axis position spread;
-     *                when count = 0: Z component of direction vector (multiplied by speed)
-     * @param xOffset X-axis offset from entity's center
-     * @param yOffset Y-axis offset from entity's base position
-     * @param zOffset Z-axis offset from entity's center
-     * @return a new immutable particle configuration
-     */
-    static SingletonParticleConfig create(
-            @NotNull ParticleOptions particleType,
-            IntProvider count,
-            double speed,
-            double spreadX,
-            double spreadY,
-            double spreadZ,
-            double xOffset,
-            double yOffset,
-            double zOffset
-    ) {
         return new ImmutableParticleConfig(particleType, count, speed, spreadX, spreadY, spreadZ, xOffset, yOffset, zOffset);
     }
 
@@ -187,7 +152,7 @@ public interface SingletonParticleConfig extends ParticleConfig {
      *
      * @return the count provider
      */
-    IntProvider countProvider();
+    int count();
 
     /**
      * Gets the speed factor for particle movement.
@@ -249,20 +214,6 @@ public interface SingletonParticleConfig extends ParticleConfig {
      * @return the Z offset
      */
     double zOffset();
-
-    /**
-     * Gets a random particle count within the configured range.
-     * <p>
-     * Delegates to the {@link IntProvider#sample(RandomSource)} method of the underlying
-     * count provider, which handles all the complexity of generating random values
-     * according to the specific provider type (uniform, constant, clamped normal, etc.).
-     *
-     * @param random the random source
-     * @return a random count value from the configured provider
-     */
-    default int count(RandomSource random) {
-        return this.countProvider().sample(random);
-    }
 
     /**
      * Spawns particles at the entity's position using this configuration.
@@ -336,7 +287,7 @@ public interface SingletonParticleConfig extends ParticleConfig {
                     position.x + xOffset,
                     position.y + yOffset,
                     position.z + zOffset,
-                    this.count(level.random),
+                    this.count(),
                     this.spreadX(),
                     this.spreadY(),
                     this.spreadZ(),
@@ -381,7 +332,7 @@ public interface SingletonParticleConfig extends ParticleConfig {
             position.add(this.xOffset(), this.yOffset(), this.zOffset());
         }
 
-        int count = this.count(random);
+        int count = this.count();
         if (count == 0) {
             double d0 = this.speed() * this.spreadX();
             double d1 = this.speed() * this.spreadY();

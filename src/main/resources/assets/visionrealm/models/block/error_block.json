@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "visionrealm:block/error_block"
+    "all": "visionrealm:block/error"
   }
 }

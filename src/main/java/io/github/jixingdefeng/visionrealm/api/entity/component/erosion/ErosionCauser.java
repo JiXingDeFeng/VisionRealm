@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.api.entity.component.erosion;
 
-import io.github.jixingdefeng.visionrealm.api.controller.player.PlayerErosionController;
+import io.github.jixingdefeng.visionrealm.core.hook.player.PlayerErosionHook;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * erosion upon players, typically through direct contact, environmental effects,
  * or special abilities.
  *
- * @see PlayerErosionController
+ * @see PlayerErosionHook
  */
 public interface ErosionCauser {
 

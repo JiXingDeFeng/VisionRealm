@@ -31,7 +31,7 @@ import java.util.List;
  * @param <T> The target type (e.g., Vec3, Entity, BlockPos)
  * @param <S> The specific selector type (e.g., PositionSelector, EntitySelector, BlockSelector)
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface RegisteredTargetSelector<T, S extends TargetSelector<T, S>> {
 
@@ -74,12 +74,12 @@ public interface RegisteredTargetSelector<T, S extends TargetSelector<T, S>> {
      *
      * @return An unmodifiable collection of dimension keys
      */
-    Collection<ResourceKey<Level>> getDimension();
+    Collection<ResourceKey<Level>> getDimensionKeys();
 
     /**
      * Returns the server levels where this target selector is applicable.
      * <p>
-     * This method resolves the dimensions from {@link #getDimension()} to actual
+     * This method resolves the dimensions from {@link #getDimensionKeys()} to actual
      * {@link ServerLevel} instances. If no dimensions are specified, returns an empty list.
      * </p>
      *

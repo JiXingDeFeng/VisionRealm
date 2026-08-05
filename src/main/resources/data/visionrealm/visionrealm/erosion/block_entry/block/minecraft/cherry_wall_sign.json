@@ -1,12 +1,10 @@
 {
   "block": "minecraft:cherry_wall_sign",
-  "entry": {
-    "visionrealm:blood": {
-      "values": [
-        {
-          "target": "visionrealm:blood_corroded_cherry_wall_sign"
-        }
-      ]
-    }
+  "values": {
+    "visionrealm:blood": [
+      {
+        "target": "visionrealm:blood_corroded_cherry_wall_sign"
+      }
+    ]
   }
 }

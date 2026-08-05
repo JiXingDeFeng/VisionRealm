@@ -1,12 +1,10 @@
 {
   "block": "minecraft:cherry_fence_gate",
-  "entry": {
-    "visionrealm:blood": {
-      "values": [
-        {
-          "target": "visionrealm:blood_corroded_cherry_fence_gate"
-        }
-      ]
-    }
+  "values": {
+    "visionrealm:blood": [
+      {
+        "target": "visionrealm:blood_corroded_cherry_fence_gate"
+      }
+    ]
   }
 }

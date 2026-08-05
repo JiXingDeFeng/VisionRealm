@@ -1,8 +1,8 @@
 package io.github.jixingdefeng.visionrealm.api.incident.block;
 
 import io.github.jixingdefeng.visionrealm.api.incident.Incident;
-import io.github.jixingdefeng.visionrealm.api.incident.IncidentContext;
-import io.github.jixingdefeng.visionrealm.common.incident.context.block.BlockIncidentContext;
+import io.github.jixingdefeng.visionrealm.core.incident.context.IncidentContext;
+import io.github.jixingdefeng.visionrealm.core.incident.context.block.BlockIncidentContext;
 import net.minecraft.core.BlockPos;
 
 /**
@@ -13,7 +13,7 @@ import net.minecraft.core.BlockPos;
  * </p>
  *
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface BlockIncident extends Incident<BlockPos> {
 

@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.block;
 
-import io.github.jixingdefeng.visionrealm.core.block.ModBlocks;
+import io.github.jixingdefeng.visionrealm.content.world.level.block.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.LevelReader;
@@ -19,7 +19,7 @@ public class CactusBlockMixin {
     @SuppressWarnings("deprecation")
     @Inject(method = "canSurvive", at = @At("TAIL"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
     private void canSurvive(BlockState state, LevelReader level, BlockPos pos, CallbackInfoReturnable<Boolean> cir, BlockState blockState1) {
-        cir.setReturnValue((blockState1.is(Blocks.CACTUS) || blockState1.is(ModBlocks.ANOMALY_CACTUS) || blockState1.is(BlockTags.SAND)) && !level.getBlockState(pos.above()).liquid());
+        cir.setReturnValue((blockState1.is(Blocks.CACTUS) || blockState1.is(ModBlocks.CURSED_CACTUS) || blockState1.is(BlockTags.SAND)) && !level.getBlockState(pos.above()).liquid());
         cir.cancel();
     }
 }

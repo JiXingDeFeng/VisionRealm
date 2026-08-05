@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.entity.ai.attribute.player;
 
-import io.github.jixingdefeng.visionrealm.core.entity.ai.attributes.ModAttributes;
+import io.github.jixingdefeng.visionrealm.content.world.entity.ai.attributes.ModAttributes;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;

@@ -60,7 +60,7 @@ import org.jetbrains.annotations.NotNull;
  * @see #renderToBuffer(EntityModel, E, PoseStack, VertexConsumer, int, int, int)
  *
  * @author JiXingDeFeng
- * @since 0.0.1-dev
+ * @since 0.1.0
  */
 public interface EntityRenderRedirector<E extends LivingEntity, M extends EntityModel<E>> {
 

@@ -1,0 +1,14 @@
+{
+  "values": {
+    "visionrealm:blood_corroded_cherry_grove": {
+      "erosion_type": "visionrealm:blood",
+      "erosion_rate": 0.0132,
+      "erosion_strength": 0.00125
+    },
+    "visionrealm:cursed_desert": {
+      "erosion_type": "visionrealm:curse",
+      "erosion_rate": 0.007,
+      "erosion_strength": 0.0003125
+    }
+  }
+}

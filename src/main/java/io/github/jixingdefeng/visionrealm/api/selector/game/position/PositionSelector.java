@@ -1,8 +1,8 @@
 package io.github.jixingdefeng.visionrealm.api.selector.game.position;
 
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
-import io.github.jixingdefeng.visionrealm.common.selector.StateSelection;
-import io.github.jixingdefeng.visionrealm.common.selector.SurfaceSelection;
+import io.github.jixingdefeng.visionrealm.core.util.selector.StateSelection;
+import io.github.jixingdefeng.visionrealm.core.util.selector.SurfaceSelection;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
  *
  * @see PositionSelector
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface PositionSelector extends TargetSelector<Vec3, PositionSelector> {
 

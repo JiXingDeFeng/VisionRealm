@@ -1,8 +1,8 @@
 package io.github.jixingdefeng.visionrealm.api.selector.game;
 
-import io.github.jixingdefeng.visionrealm.common.util.selector.TargetSelectors;
-import io.github.jixingdefeng.visionrealm.impl.selector.game.AbstractSelector;
-import io.github.jixingdefeng.visionrealm.impl.selector.game.BaseSelector;
+import io.github.jixingdefeng.visionrealm.core.selector.game.AbstractSelector;
+import io.github.jixingdefeng.visionrealm.core.selector.game.BaseSelector;
+import io.github.jixingdefeng.visionrealm.core.util.selector.TargetSelectors;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -12,7 +12,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -63,7 +62,7 @@ import java.util.stream.Stream;
  * @see AbstractSelector
  * @see BaseSelector
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface TargetSelector<T, S extends TargetSelector<T, S>> {
 
@@ -89,36 +88,7 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
         return TargetSelectors.create(level);
     }
 
-    /**
-     * Restricts selection to targets within the specified biomes.
-     * <p>This is a setter operation. Pass an empty collection to clear the filter.
-     * Multiple calls will overwrite the previous value.</p>
-     *
-     * <p><strong>Note:</strong> Only biomes that are in the whitelist AND NOT in the
-     * blacklist will be selected. If the whitelist is empty, any biome not in the
-     * blacklist is allowed.</p>
-     *
-     * @param biomes The biomes to select from (must not be {@code null})
-     * @return The current selector instance for chaining
-     * @throws NullPointerException if {@code biomes} is {@code null}
-     */
-    S allowBiome(@NotNull Collection<ResourceKey<? extends Biome>> biomes);
-
-    /**
-     * Excludes targets within the specified biomes from selection.
-     * <p>This is a setter operation. Pass an empty collection to clear the filter.
-     * Multiple calls will overwrite the previous value.</p>
-     *
-     * <p><strong>Note:</strong> Biomes in the blacklist are excluded. If a whitelist
-     * is also set, biomes must be in the whitelist AND NOT in the blacklist to be
-     * allowed. If only the blacklist is set, all biomes except those in the blacklist
-     * are allowed.</p>
-     *
-     * @param biomes The biomes to exclude (must not be {@code null})
-     * @return The current selector instance for chaining
-     * @throws NullPointerException if {@code biomes} is {@code null}
-     */
-    S denyBiome(@NotNull Collection<ResourceKey<? extends Biome>> biomes);
+    S filterBiome(@Nullable Predicate<? super ResourceKey<Biome>> filter);
 
     /**
      * Sets a fixed reference point for area-based selection.
@@ -246,8 +216,13 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
 
     /**
      * Performs a single random target selection.
-     * <p>Each call to this method adds a new randomly selected target to the result list.
-     * Multiple calls will accumulate results.</p>
+     * <p>
+     * Each call to this method adds a new randomly selected target to the result list.
+     * Multiple calls will accumulate results.
+     * <p>
+     * Note that invoking this method will discard any previously set restrictions
+     * from {@link #inRange} or {@link #inBox}, but the height limit set via
+     * {@link #inHeightRange} is preserved.
      *
      * @param random The random source to use, or {@code null} to fall back
      * @return The current selector instance for chaining
@@ -256,8 +231,13 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
 
     /**
      * Performs multiple random target selections using default transformation logic.
-     * <p>Each call to this method adds multiple randomly selected targets to the result list.
-     * Multiple calls will accumulate results.</p>
+     * <p>
+     * Each call to this method adds multiple randomly selected targets to the result list.
+     * Multiple calls will accumulate results.
+     * <p>
+     * Note that invoking this method will discard any previously set restrictions
+     * from {@link #inRange} or {@link #inBox}, but the height limit set via
+     * {@link #inHeightRange} is preserved.
      *
      * @param random The random source to use, or {@code null} to fall back
      * @return The current selector instance for chaining
@@ -266,8 +246,13 @@ public interface TargetSelector<T, S extends TargetSelector<T, S>> {
 
     /**
      * Performs multiple random target selections using a custom transformer.
-     * <p>Each call to this method adds multiple randomly selected targets to the result list.
-     * Multiple calls will accumulate results.</p>
+     * <p>
+     * Each call to this method adds multiple randomly selected targets to the result list.
+     * Multiple calls will accumulate results.
+     * <p>
+     * Note that invoking this method will discard any previously set restrictions
+     * from {@link #inRange} or {@link #inBox}, but the height limit set via
+     * {@link #inHeightRange} is preserved.
      *
      * @param customizer The custom transformation logic
      * @param random     The random source to use, or {@code null} to fall back

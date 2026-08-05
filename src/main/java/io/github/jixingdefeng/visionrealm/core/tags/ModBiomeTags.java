@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.core.tags;
 
-import io.github.jixingdefeng.visionrealm.core.VisionRealm;
+import io.github.jixingdefeng.visionrealm.VisionRealm;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

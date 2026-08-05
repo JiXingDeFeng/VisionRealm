@@ -1,10 +1,9 @@
 package io.github.jixingdefeng.visionrealm.api.selector.game.block;
 
 import io.github.jixingdefeng.visionrealm.api.selector.game.TargetSelector;
-import io.github.jixingdefeng.visionrealm.common.selector.StateSelection;
-import io.github.jixingdefeng.visionrealm.common.selector.SurfaceSelection;
+import io.github.jixingdefeng.visionrealm.core.util.selector.StateSelection;
+import io.github.jixingdefeng.visionrealm.core.util.selector.SurfaceSelection;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Block;
 
 /**
  * A selector for retrieving block states from the world.
@@ -27,38 +26,9 @@ import net.minecraft.world.level.block.Block;
  * parent interface {@link TargetSelector}.</p>
  *
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface BlockSelector extends TargetSelector<BlockPos, BlockSelector> {
-
-    /**
-     * Allows only blocks of the specified types.
-     * <p>This is a setter operation. Calling with no arguments clears the filter.
-     * Multiple calls will overwrite the previous value.</p>
-     *
-     * <p><strong>Note:</strong> Only blocks that are in the whitelist AND NOT in the
-     * blacklist will be selected. If the whitelist is empty, any block not in the
-     * blacklist is allowed.</p>
-     *
-     * @param blocks The block types to allow (optional)
-     * @return The current selector instance for chaining
-     */
-    BlockSelector allowBlocks(Block... blocks);
-
-    /**
-     * Excludes blocks of the specified types.
-     * <p>This is a setter operation. Calling with no arguments clears the filter.
-     * Multiple calls will overwrite the previous value.</p>
-     *
-     * <p><strong>Note:</strong> Blocks in the blacklist are excluded. If a whitelist
-     * is also set, blocks must be in the whitelist AND NOT in the blacklist to be
-     * allowed. If only the blacklist is set, all blocks except those in the blacklist
-     * are allowed.</p>
-     *
-     * @param blocks The block types to deny (optional)
-     * @return The current selector instance for chaining
-     */
-    BlockSelector denyBlocks(Block... blocks);
 
     /**
      * Selects only positions that are on the surface (topmost non-air block).

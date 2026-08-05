@@ -2,7 +2,7 @@ package io.github.jixingdefeng.visionrealm.mixin.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import io.github.jixingdefeng.visionrealm.core.entity.custom.monster.ForgottenShadow;
+import io.github.jixingdefeng.visionrealm.content.world.entity.custom.monster.ForgottenShadow;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;

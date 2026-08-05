@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.entity.ai.monster;
 
-import io.github.jixingdefeng.visionrealm.core.entity.ai.goal.ImprovedNearestAttackableTargetGoal;
+import io.github.jixingdefeng.visionrealm.content.world.entity.ai.goal.ImprovedNearestAttackableTargetGoal;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;

@@ -34,7 +34,7 @@ import net.minecraft.world.phys.Vec3;
  *
  * @param <T> The entity type (must extend Entity)
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface EntitySelector<T extends Entity> extends TargetSelector<T, EntitySelector<T>> {
 }

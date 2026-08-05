@@ -27,7 +27,7 @@ import java.util.List;
  * @param <L> The level type (extends Level)
  * @param <R> The random source type (extends RandomSource)
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 @FunctionalInterface
 public interface TargetCustomizer<T, L extends Level, R extends RandomSource> {

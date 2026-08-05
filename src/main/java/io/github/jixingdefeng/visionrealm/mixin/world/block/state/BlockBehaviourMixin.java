@@ -1,6 +1,6 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.block.state;
 
-import io.github.jixingdefeng.visionrealm.core.block.state.BlockBehaviourExpand;
+import io.github.jixingdefeng.visionrealm.content.world.level.block.state.BlockBehaviourExpand;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

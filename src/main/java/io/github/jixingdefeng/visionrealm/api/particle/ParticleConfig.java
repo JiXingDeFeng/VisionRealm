@@ -2,10 +2,14 @@ package io.github.jixingdefeng.visionrealm.api.particle;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import io.github.jixingdefeng.visionrealm.common.util.particle.ParticleTemplates;
-import io.github.jixingdefeng.visionrealm.core.particle.config.ParticleConfigStore;
-import io.github.jixingdefeng.visionrealm.impl.particle.EmptyParticleConfig;
-import io.github.jixingdefeng.visionrealm.impl.particle.list.WeightedParticleConfig;
+import com.mojang.serialization.MapCodec;
+import io.github.jixingdefeng.visionrealm.content.registry.ModRegistries;
+import io.github.jixingdefeng.visionrealm.content.registry.ModRegistry;
+import io.github.jixingdefeng.visionrealm.core.particle_config.EmptyParticleConfig;
+import io.github.jixingdefeng.visionrealm.core.particle_config.ParticleConfigManager;
+import io.github.jixingdefeng.visionrealm.core.particle_config.list.WeightedParticleConfig;
+import io.github.jixingdefeng.visionrealm.core.util.particle.ParticleTemplates;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,21 +78,19 @@ import java.util.List;
  * @see SingletonParticleConfig
  * @see WeightedParticleConfig
  * @see ParticleTemplates
- * @since 0.0.3-dev
+ * @since 0.1.0
  */
 public interface ParticleConfig {
-    Codec<ParticleConfig> CODEC = ResourceLocation.CODEC.dispatch(
-            ParticleConfig::getType,
-            ParticleConfigStore::getCodec
+    Codec<ParticleConfig> CODEC = ResourceKey.codec(ModRegistries.PARTICLE_CONFIG_TYPE).dispatch(
+            ParticleConfigManager::getCodec,
+            ModRegistry.PARTICLE_CONFIG_TYPE::get
     );
     Codec<ResourceLocation> LOCATION_CODEC = Codec.either(
             ResourceLocation.CODEC, CODEC
     ).xmap(
             either -> either.map(
                     location -> location,
-                    particle -> ParticleConfigStore.getInstance()
-                            .orElseThrow(() -> new NullPointerException("ParticleConfigStore it is null"))
-                            .storePersistent(particle)
+                    ParticleConfig::getType
             ),
             Either::left
     );
@@ -111,8 +113,10 @@ public interface ParticleConfig {
      *
      * @return The type identifier for this particle configuration
      */
-    @NotNull
     ResourceLocation getType();
+
+    @NotNull
+    MapCodec<? extends ParticleConfig> getMapCodec();
 
     /**
      * Returns the list of particle configurations.

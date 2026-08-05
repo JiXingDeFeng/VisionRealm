@@ -1,7 +1,7 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.item;
 
-import io.github.jixingdefeng.visionrealm.core.entity.ai.goal.SecondaryTarget;
-import io.github.jixingdefeng.visionrealm.core.entity.custom.Administrator;
+import io.github.jixingdefeng.visionrealm.content.world.entity.ai.goal.SecondaryTarget;
+import io.github.jixingdefeng.visionrealm.content.world.entity.custom.Administrator;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;

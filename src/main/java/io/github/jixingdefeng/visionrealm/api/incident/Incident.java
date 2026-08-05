@@ -1,5 +1,7 @@
 package io.github.jixingdefeng.visionrealm.api.incident;
 
+import io.github.jixingdefeng.visionrealm.core.incident.context.IncidentContext;
+
 /**
  * A generic incident that can be executed on a set of targets.
  * <p>
@@ -9,7 +11,7 @@ package io.github.jixingdefeng.visionrealm.api.incident;
  *
  * @param <T> The target type (e.g., BlockPos, Vec3, Entity)
  * @author JiXingDeFeng
- * @since 0.0.2-dev
+ * @since 0.1.0
  */
 public interface Incident<T> {
 

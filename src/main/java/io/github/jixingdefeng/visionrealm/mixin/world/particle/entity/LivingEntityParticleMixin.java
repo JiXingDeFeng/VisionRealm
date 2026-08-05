@@ -1,8 +1,8 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.particle.entity;
 
+import io.github.jixingdefeng.visionrealm.api.entity.particle.EntityParticleProvider;
 import io.github.jixingdefeng.visionrealm.api.particle.SingletonParticleConfig;
-import io.github.jixingdefeng.visionrealm.api.particle.provider.EntityParticleProvider;
-import io.github.jixingdefeng.visionrealm.impl.particle.singleton.ModifiableParticleConfig;
+import io.github.jixingdefeng.visionrealm.core.particle_config.singleton.ModifiableParticleConfig;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;

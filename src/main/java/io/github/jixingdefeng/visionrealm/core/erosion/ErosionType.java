@@ -3,21 +3,20 @@ package io.github.jixingdefeng.visionrealm.core.erosion;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.jixingdefeng.visionrealm.common.util.serialization.Codecs;
+import io.github.jixingdefeng.visionrealm.core.util.serialization.Codecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
-public class ErosionType {
+public record ErosionType(String name, boolean block, boolean entity) {
     public static final ErosionType NONE = new ErosionType("none", false, false);
     public static final Codec<ErosionType> CODEC = Codec.xor(
             RecordCodecBuilder.<ErosionType>create(instance ->
                     instance.group(
-                            Codec.STRING.fieldOf("name").forGetter(ErosionType::getName),
-                            Codec.BOOL.fieldOf("block").forGetter(ErosionType::block),
-                            Codec.BOOL.fieldOf("entity").forGetter(ErosionType::entity)
+                            Codec.STRING.fieldOf("name").forGetter(ErosionType::name),
+                            Codec.BOOL.optionalFieldOf("block", true).forGetter(ErosionType::block),
+                            Codec.BOOL.optionalFieldOf("entity", true).forGetter(ErosionType::entity)
                     ).apply(instance, ErosionType::new)
             ),
             Codecs.EMPTY_OBJECT
@@ -28,30 +27,9 @@ public class ErosionType {
             ),
             Either::left
     );
-    private final String name;
-    private final boolean block;
-    private final boolean entity;
-
-    protected ErosionType(String name, boolean block, boolean entity) {
-        this.name = name;
-        this.block = block;
-        this.entity = entity;
-    }
-
-    public String getName() {
-        return this.name;
-    }
 
     public boolean none() {
         return this.equals(NONE);
-    }
-
-    public boolean block() {
-        return this.block;
-    }
-
-    public boolean entity() {
-        return this.entity;
     }
 
     public boolean general() {
@@ -73,6 +51,7 @@ public class ErosionType {
     }
 
     @Override
+    @NotNull
     public String toString() {
         if (this == NONE) return "ErosionType.NONE";
         return "ErosionType[name=" + this.name + ", block=" + this.block + ", entity=" + this.entity + "]";
@@ -81,14 +60,9 @@ public class ErosionType {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        return obj instanceof ErosionType type
-                && this.name.equals(type.name)
-                && this.block == type.block
-                && this.entity == type.entity;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.name, this.block, this.entity);
+        return obj instanceof ErosionType(String name1, boolean block1, boolean entity1)
+                && this.name.equals(name1)
+                && this.block == block1
+                && this.entity == entity1;
     }
 }

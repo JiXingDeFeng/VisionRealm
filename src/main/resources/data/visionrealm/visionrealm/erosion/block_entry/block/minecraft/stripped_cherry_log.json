@@ -1,12 +1,10 @@
 {
   "block": "minecraft:stripped_cherry_log",
-  "entry": {
-    "visionrealm:blood": {
-      "values": [
-        {
-          "target": "visionrealm:stripped_blood_corroded_cherry_log"
-        }
-      ]
-    }
+  "values": {
+    "visionrealm:blood": [
+      {
+        "target": "visionrealm:stripped_blood_corroded_cherry_log"
+      }
+    ]
   }
 }

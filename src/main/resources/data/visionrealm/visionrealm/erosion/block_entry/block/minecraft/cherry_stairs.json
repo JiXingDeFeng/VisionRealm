@@ -1,12 +1,10 @@
 {
   "block": "minecraft:cherry_stairs",
-  "entry": {
-    "visionrealm:blood": {
-      "values": [
-        {
-          "target": "visionrealm:blood_corroded_cherry_stairs"
-        }
-      ]
-    }
+  "values": {
+    "visionrealm:blood": [
+      {
+        "target": "visionrealm:blood_corroded_cherry_stairs"
+      }
+    ]
   }
 }

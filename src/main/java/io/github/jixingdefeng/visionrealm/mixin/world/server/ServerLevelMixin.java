@@ -1,9 +1,10 @@
 package io.github.jixingdefeng.visionrealm.mixin.world.server;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.jixingdefeng.visionrealm.api.erosion.block.CanBeErosionBlock;
-import io.github.jixingdefeng.visionrealm.common.util.erosion.ErosionUtil;
+import io.github.jixingdefeng.visionrealm.api.erosion.block.ErodibleBlock;
 import io.github.jixingdefeng.visionrealm.core.erosion.ErosionType;
+import io.github.jixingdefeng.visionrealm.core.erosion.block_erossion.BlockErosionManager;
+import io.github.jixingdefeng.visionrealm.core.util.erosion.ErosionUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -44,9 +45,9 @@ public class ServerLevelMixin {
     @Unique
     private static void visionRealm$randomTickErosion(BlockState state, BlockPos pos, ServerLevel level, RandomSource random) {
         Block block = state.getBlock();
-        ErosionType type = ErosionUtil.getBiomeErosionType(pos, level);
+        ErosionType type = ErosionUtil.getErosionType(level.getBiome(pos));
         if (type.isValidFor(block)) {
-            CanBeErosionBlock<?, ?> canBeErosion = ErosionUtil.getCanBeErosion(block, level, pos, type);
+            ErodibleBlock<?, ?> canBeErosion = BlockErosionManager.getEntryAndValidate(block, level, pos, type);
             if (canBeErosion != null) {
                 canBeErosion.randomTickInfection(state, level, pos, random, type);
             }

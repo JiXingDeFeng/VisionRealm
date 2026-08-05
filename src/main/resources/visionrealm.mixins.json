@@ -5,22 +5,25 @@
   "mixins": [
     "client.render.entity.EntityRenderDispatcherMixin",
     "data.worldgen.biome.BiomeDataMixin",
-    "world.biome.OverworldBiomeBuilderMixin",
+    "world.biome.MultiNoiseBiomeSourceParameterList_PresetMixin",
+    "world.biome.MultiNoiseBiomeSourceParameterListsMixin",
     "world.block.CactusBlockMixin",
     "world.block.state.BlockBehaviourMixin",
     "world.block.state.BlockBehaviourMixin$PropertiesMixin",
+    "world.entity.LivingEntityExtensionsMixin",
     "world.entity.ai.animal.IronGolemMixin",
     "world.entity.ai.attribute.player.PlayerAttributeMixin",
     "world.entity.ai.monster.ZombieMixin",
-    "world.entity.player.PlayerErosionControllerMixin",
-    "world.entity.player.PlayerSanityControllerMixin",
+    "world.entity.player.PlayerErosionHookMixin",
+    "world.entity.player.PlayerMirrorStorageMixin",
+    "world.entity.player.PlayerSanityHookMixin",
     "world.item.NameTagItemMixin",
     "world.particle.entity.EntityParticleMixin",
     "world.particle.entity.LivingEntityParticleMixin",
-    "world.server.ServerLevelMixin",
-    "world.sound.entity.LivingEntitySoundMixin"
+    "world.server.ServerLevelMixin"
   ],
   "client": [
+    "client.entity.AbstractClientPlayerMixin",
     "client.render.entity.LivingEntityRendererMixin"
   ],
   "injectors": {
